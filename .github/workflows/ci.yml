@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: drkliu/jimu
-          ref: 610cfc13c69f
+          ref: 610cfc13c69fc007cc835613d5f6302b42d94fa0
           path: .provider
           ssh-key: ${{ secrets.JIMU_PROVIDER_DEPLOY_KEY }}
           persist-credentials: false
