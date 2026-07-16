@@ -1,0 +1,34 @@
+{
+  "contract_version": "1.0.0",
+  "token_header": "Authorization: Bearer \u003copaque OIDC token\u003e",
+  "tenant_switch": "obtain a fresh tenant-scoped OIDC token and construct a fresh client",
+  "principals": [
+    {
+      "name": "tenant-a-admin",
+      "tenant": "tenant-a",
+      "token_environment": "STUDIO_TENANT_A_TOKEN",
+      "roles": [
+        "identity.admin",
+        "studio.audit.read",
+        "studio.metadata.apply",
+        "studio.metadata.read",
+        "studio.metadata.write",
+        "studio.quota.admin",
+        "studio.quota.read",
+        "studio.workflow.operate",
+        "studio.workflow.read"
+      ]
+    },
+    {
+      "name": "tenant-b-viewer",
+      "tenant": "tenant-b",
+      "token_environment": "STUDIO_TENANT_B_TOKEN",
+      "roles": [
+        "studio.audit.read",
+        "studio.metadata.read",
+        "studio.quota.read",
+        "studio.workflow.read"
+      ]
+    }
+  ]
+}

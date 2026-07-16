@@ -1,0 +1,31 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+}
+
+header,
+main {
+  margin-inline: auto;
+  max-width: 72rem;
+  padding: 1rem;
+}
+
+.skip-link {
+  left: 1rem;
+  position: absolute;
+  top: -4rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+:focus-visible {
+  outline: 0.2rem solid currentColor;
+  outline-offset: 0.2rem;
+}
