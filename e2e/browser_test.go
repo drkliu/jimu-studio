@@ -5,6 +5,7 @@ package e2e_test
 import (
 	"context"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -16,10 +17,15 @@ func TestSecureAccessibleShellInBrowser(t *testing.T) {
 	application := httptest.NewServer(server.New())
 	t.Cleanup(application.Close)
 
-	allocator, cancelAllocator := chromedp.NewExecAllocator(context.Background(), append(
+	allocatorOptions := append(
 		chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-dev-shm-usage", true),
-	)...)
+	)
+	if os.Getenv("CI") == "true" {
+		// GitHub-hosted runners disable the kernel features Chrome's sandbox requires.
+		allocatorOptions = append(allocatorOptions, chromedp.NoSandbox)
+	}
+	allocator, cancelAllocator := chromedp.NewExecAllocator(context.Background(), allocatorOptions...)
 	t.Cleanup(cancelAllocator)
 	browser, cancelBrowser := chromedp.NewContext(allocator)
 	t.Cleanup(cancelBrowser)
