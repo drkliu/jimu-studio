@@ -2,10 +2,14 @@
   "provider_commit": "610cfc13c69f",
   "contract_version": "1.0.0",
   "external_repository": "github.com/drkliu/jimu-studio",
-  "last_merged_slice": null,
-  "last_merged_commit": "44c0d24",
-  "active_slice": "S0",
-  "active_branch": "feature/s0-foundation",
+  "last_merged_slice": "S0",
+  "last_merged_commit": "001fe499bcdcdd22e17b15490bf2bc5c9ec1029d",
+  "active_slice": "S1",
+  "active_branch": "feature/s1-auth-shell",
+  "post_merge_evidence": {
+    "ci_run": 29478393013,
+    "codeql_run": 29478393132
+  },
   "release": null,
-  "updated_at": "2026-07-16T00:00:00Z"
+  "updated_at": "2026-07-16T06:59:01Z"
 }
