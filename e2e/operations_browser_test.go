@@ -27,7 +27,7 @@ func (operationsBrowserIdentity) AuthorizationURL(auth.AuthorizationRequest) str
 func (operationsBrowserIdentity) Exchange(_ context.Context, request auth.ExchangeRequest) (auth.Identity, error) {
 	return auth.Identity{
 		Subject: "operator", DisplayName: "Operations operator",
-		Roles: []string{"studio.audit.read", "studio.quota.admin", "studio.quota.read", "studio.workflow.operate", "studio.workflow.read"},
+		Roles:       []string{"studio.audit.read", "studio.quota.admin", "studio.quota.read", "studio.workflow.operate", "studio.workflow.read"},
 		AccessToken: "operations.access", RefreshToken: "operations.refresh",
 		Expiry: time.Now().Add(time.Hour), Nonce: request.ExpectedNonce,
 	}, nil
