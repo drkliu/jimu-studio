@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Metadata — Jimu Studio</title>
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}"{{if eq .Path "/metadata"}} aria-current="page"{{end}}>{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Metadata</h1>
+    <p>Entity and field definitions from the authoritative Jimu provider. Relation semantics are not part of Studio contract 1.0.0.</p>
+    {{if .Updated}}<p role="status">Entity {{.Updated}} was updated.</p>{{end}}
+    <form action="/metadata" method="get" role="search">
+      <label for="metadata-search">Search entities</label>
+      <input id="metadata-search" name="search" value="{{.Search}}" maxlength="256">
+      <button type="submit">Search</button>
+    </form>
+    <section aria-labelledby="map-heading">
+      <h2 id="map-heading">Entity and field map</h2>
+      <div class="metadata-map">
+        {{range .Entities}}
+          <article class="entity-card">
+            <h3>{{.Entity.Name}}</h3>
+            <p><code>{{.Entity.Code}}</code> · version {{.Entity.Version}}{{if .Entity.Kind}} · {{.Entity.Kind}}{{end}}</p>
+            <ul>{{range .Entity.Fields}}<li><code>{{.Code}}</code> <span aria-label="data type">{{.DataType}}</span>{{if .Required}} · required{{end}}{{if .ReadOnly}} · read only{{end}}</li>{{end}}</ul>
+            {{if .EditURL}}<p><a href="{{.EditURL}}">Edit {{.Entity.Name}}</a></p>{{end}}
+          </article>
+        {{else}}<p>No entities matched.</p>{{end}}
+      </div>
+    </section>
+    <section aria-labelledby="table-heading">
+      <h2 id="table-heading">Accessible metadata table</h2>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Entity fields">
+        <table>
+          <thead><tr><th scope="col">Entity</th><th scope="col">Version</th><th scope="col">Field</th><th scope="col">Data type</th><th scope="col">Properties</th></tr></thead>
+          <tbody>
+            {{range .Entities}}{{$entity := .Entity}}{{range .Entity.Fields}}<tr><th scope="row"><code>{{$entity.Code}}</code></th><td>{{$entity.Version}}</td><td><code>{{.Code}}</code></td><td>{{.DataType}}</td><td>{{if .Required}}Required {{end}}{{if .ReadOnly}}Read only{{end}}</td></tr>{{end}}{{end}}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {{if .NextURL}}<p><a rel="next" href="{{.NextURL}}">Next page</a></p>{{end}}
+  </main>
+</body>
+</html>

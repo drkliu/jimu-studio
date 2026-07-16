@@ -48,6 +48,9 @@ func NewAuthenticated(broker *auth.Broker, secureCookies bool) (http.Handler, er
 	mux.HandleFunc("GET /auth/callback", server.callback)
 	mux.HandleFunc("POST /auth/switch", server.switchTenant)
 	mux.HandleFunc("POST /auth/logout", server.logout)
+	mux.HandleFunc("GET /metadata", server.metadataList)
+	mux.HandleFunc("GET /metadata/edit", server.metadataEdit)
+	mux.HandleFunc("POST /metadata/edit", server.metadataSave)
 	mux.Handle("GET /assets/", http.FileServerFS(content))
 	handler := securityHeaders(mux)
 	if secureCookies {

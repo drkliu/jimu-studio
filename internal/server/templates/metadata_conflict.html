@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Version conflict — Jimu Studio</title><link rel="stylesheet" href="/assets/app.css"></head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Version conflict</h1>
+    <div role="alert"><p>The entity changed before your guarded save. Nothing was overwritten.</p>{{if .RequestID}}<p>Request ID: <code>{{.RequestID}}</code></p>{{end}}</div>
+    <div class="comparison">
+      <section><h2>Submitted version {{.Submitted.Version}}</h2><p>{{.Submitted.Name}} · {{.Submitted.Kind}}</p><ul>{{range .Submitted.Fields}}<li><code>{{.Code}}</code> {{.DataType}}</li>{{end}}</ul></section>
+      <section><h2>Current version {{.Current.Version}}</h2><p>{{.Current.Name}} · {{.Current.Kind}}</p><ul>{{range .Current.Fields}}<li><code>{{.Code}}</code> {{.DataType}}</li>{{end}}</ul></section>
+    </div>
+    <p><a href="/metadata/edit?code={{.Current.Code}}">Edit the current version and reconcile</a></p>
+    <p><a href="/metadata">Discard submitted changes</a></p>
+  </main>
+</body>
+</html>

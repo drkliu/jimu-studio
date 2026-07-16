@@ -75,9 +75,101 @@ button,
 }
 
 nav a,
-.skip-link {
+.skip-link,
+main a {
   align-items: center;
   display: inline-flex;
   min-height: 2.75rem;
   padding-inline: 0.25rem;
+}
+
+input:not([type="checkbox"]),
+select,
+textarea {
+  box-sizing: border-box;
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.5rem;
+}
+
+input[type="checkbox"] {
+  height: 1.5rem;
+  margin: 0 0.5rem 0 0;
+  vertical-align: middle;
+  width: 1.5rem;
+}
+
+label {
+  display: inline-block;
+  margin-inline-end: 0.5rem;
+}
+
+code {
+  overflow-wrap: anywhere;
+}
+
+.metadata-map,
+.comparison {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+}
+
+.entity-card,
+.comparison section,
+.field-editor,
+[role="alert"],
+[role="status"] {
+  border: 0.125rem solid currentColor;
+  border-radius: 0.35rem;
+  padding: 1rem;
+}
+
+.entity-card h3,
+.field-editor h2 {
+  margin-top: 0;
+}
+
+.table-scroll {
+  margin-block: 1rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 40rem;
+  width: 100%;
+}
+
+th,
+td {
+  border: 0.0625rem solid currentColor;
+  padding: 0.6rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+fieldset {
+  margin-block: 1rem;
+  padding: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  button,
+  .button,
+  .entity-card,
+  .comparison section,
+  .field-editor {
+    border-color: ButtonText;
+  }
 }
