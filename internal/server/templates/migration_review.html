@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Migration plan review — Jimu Studio</title><link rel="stylesheet" href="/assets/app.css"></head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Migration plan review</h1>
+    <p>This provider-generated summary is SQL-free. Review every risk before applying.</p>
+    {{if .Plans}}
+    {{if .Message}}<div role="alert"><p>{{.Message}}</p></div>{{end}}
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Migration plan steps">
+        <table><thead><tr><th scope="col">Entity</th><th scope="col">Plan</th><th scope="col">Risk</th><th scope="col">Summary</th><th scope="col">Confirmation required</th></tr></thead>
+        <tbody>{{range .Plans}}<tr><th scope="row"><code>{{.EntityCode}}</code></th><td><code>{{.PlanCode}}</code></td><td>{{.Risk}}</td><td>{{.Summary}}</td><td>{{if .RequiresConfirmation}}Yes{{else}}No{{end}}</td></tr>{{end}}</tbody></table>
+      </div>
+      {{if .CanApply}}
+        <section aria-labelledby="apply-heading"><h2 id="apply-heading">Dangerous operation</h2>
+          <p>Type <code>{{.Confirmation}}</code> exactly. Studio will apply only the server-held entity versions shown in this plan.</p>
+          <form action="/metadata/apply" method="post">
+            <input type="hidden" name="csrf" value="{{.Session.CSRF}}"><input type="hidden" name="draft" value="{{.Draft}}">
+            <p><label for="migration-confirmation">Typed confirmation</label><input id="migration-confirmation" name="confirmation" required autocomplete="off" spellcheck="false"></p>
+            <button type="submit">Apply reviewed migration</button>
+          </form>
+        </section>
+      {{else}}<p role="note">Your identity cannot apply migrations, or this plan has no steps.</p>{{end}}
+    {{else}}<p role="status">No migration steps are required.</p>{{end}}
+    <p><a href="/metadata">Return to metadata without applying</a></p>
+  </main>
+</body>
+</html>

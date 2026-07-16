@@ -26,6 +26,11 @@
           <article class="entity-card">
             <h3>{{.Entity.Name}}</h3>
             <p><code>{{.Entity.Code}}</code> · version {{.Entity.Version}}{{if .Entity.Kind}} · {{.Entity.Kind}}{{end}}</p>
+            {{if .EditURL}}<form action="/metadata/plan" method="post">
+              <input type="hidden" name="csrf" value="{{$.Session.CSRF}}">
+              <input type="hidden" name="code" value="{{.Entity.Code}}">
+              <button type="submit">Review migration plan for {{.Entity.Name}}</button>
+            </form>{{end}}
             <ul>{{range .Entity.Fields}}<li><code>{{.Code}}</code> <span aria-label="data type">{{.DataType}}</span>{{if .Required}} · required{{end}}{{if .ReadOnly}} · read only{{end}}</li>{{end}}</ul>
             {{if .EditURL}}<p><a href="{{.EditURL}}">Edit {{.Entity.Name}}</a></p>{{end}}
           </article>

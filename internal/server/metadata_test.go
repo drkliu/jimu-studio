@@ -24,7 +24,7 @@ func (metadataIdentity) AuthorizationURL(request auth.AuthorizationRequest) stri
 func (metadataIdentity) Exchange(_ context.Context, request auth.ExchangeRequest) (auth.Identity, error) {
 	return auth.Identity{
 		Subject: "operator", DisplayName: "Metadata operator",
-		Roles:       []string{"studio.metadata.read", "studio.metadata.write"},
+		Roles:       []string{"studio.metadata.read", "studio.metadata.write", "studio.metadata.apply"},
 		AccessToken: request.Code + ".access", RefreshToken: request.Code + ".refresh",
 		Expiry: time.Now().Add(time.Hour), Nonce: request.ExpectedNonce,
 	}, nil

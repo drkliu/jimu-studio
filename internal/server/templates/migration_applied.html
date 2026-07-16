@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Migration applied — Jimu Studio</title><link rel="stylesheet" href="/assets/app.css"></head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Migration applied</h1><p role="status">The provider accepted the reviewed migration request.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Applied migration results"><table><thead><tr><th scope="col">Entity</th><th scope="col">Plan</th><th scope="col">Risk</th><th scope="col">Summary</th></tr></thead><tbody>{{range .Plans}}<tr><th scope="row"><code>{{.EntityCode}}</code></th><td><code>{{.PlanCode}}</code></td><td>{{.Risk}}</td><td>{{.Summary}}</td></tr>{{end}}</tbody></table></div>
+    <p><a href="/metadata">Return to metadata</a></p>
+  </main>
+</body>
+</html>
