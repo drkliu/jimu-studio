@@ -1,0 +1,10 @@
+{
+  "format_version": 1,
+  "contract_version": "1.0.0",
+  "sha256": {
+    "README.md": "da26afeb7203215ff6d3ec68bd14a07bd315ad5ebf632a33cf249bbcf4b1fca2",
+    "client.ts": "d8fa1470ab7a61d69e11d35b53eaa2c338e4067fb824b0e99b08dce9a8d8996e",
+    "fixtures.json": "2f4ce09e8b9acc7e386c4cf8dbd35e1edde9041c6742b6dbd175f2127f98679a",
+    "openapi.json": "9891172a3d4fa0f75b37a820d481c58e5e68cf12d4bede1cbf07959b0763549f"
+  }
+}

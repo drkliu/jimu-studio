@@ -1,0 +1,11 @@
+{
+  "provider_commit": "610cfc13c69f",
+  "contract_version": "1.0.0",
+  "external_repository": "github.com/drkliu/jimu-studio",
+  "last_merged_slice": null,
+  "last_merged_commit": "44c0d24",
+  "active_slice": "S0",
+  "active_branch": "feature/s0-foundation",
+  "release": null,
+  "updated_at": "2026-07-16T00:00:00Z"
+}

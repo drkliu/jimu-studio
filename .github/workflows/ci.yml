@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Contract 1.0.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Checkout pinned private provider
+        uses: actions/checkout@v5
+        with:
+          repository: drkliu/jimu
+          ref: 610cfc13c69fc007cc835613d5f6302b42d94fa0
+          path: .provider
+          ssh-key: ${{ secrets.JIMU_PROVIDER_DEPLOY_KEY }}
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify pinned provider artifacts
+        run: cd .provider && go run ./cmd/jimuctl studio verify --dir ../contracts/studio/v1
+
+  quality:
+    name: Go quality
+    needs: contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify formatting
+        run: test -z "$(gofmt -l .)"
+      - name: Vet
+        run: go vet ./...
+      - name: Unit and race tests
+        run: go test -race -coverprofile=coverage.out ./...
+      - name: Build
+        run: go build ./cmd/studio
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
+          if-no-files-found: error
+
+  browser:
+    name: Go browser E2E
+    needs: contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Browser smoke and accessibility structure
+        run: go test -tags=e2e -timeout=2m ./e2e
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    needs: contract
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  vulnerability:
+    name: Vulnerability scan
+    needs: contract
+    permissions:
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: golang/govulncheck-action@v1
+        with:
+          go-package: ./...
