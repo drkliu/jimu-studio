@@ -31,7 +31,7 @@ func (identity metadataBrowserIdentity) AuthorizationURL(request auth.Authorizat
 func (metadataBrowserIdentity) Exchange(_ context.Context, request auth.ExchangeRequest) (auth.Identity, error) {
 	return auth.Identity{
 		Subject: "operator", DisplayName: "Metadata operator",
-		Roles: []string{"studio.metadata.read", "studio.metadata.write"}, AccessToken: request.Code + ".access",
+		Roles: []string{"studio.metadata.read", "studio.metadata.write", "studio.metadata.apply"}, AccessToken: request.Code + ".access",
 		RefreshToken: request.Code + ".refresh", Expiry: time.Now().Add(time.Hour), Nonce: request.ExpectedNonce,
 	}, nil
 }
@@ -48,6 +48,9 @@ func TestMetadataEditConflictAndAccessibilityFlow(t *testing.T) {
 	}
 	conflictPending := true
 	var expectedVersions []int64
+	var migrationConfirmation string
+	var migrationVersion int64
+	var migrationIdempotency string
 	var idempotencyKeys []string
 	providerAuthorization := true
 	providerTrustedHeader := false
@@ -61,6 +64,35 @@ func TestMetadataEditConflictAndAccessibilityFlow(t *testing.T) {
 			providerTrustedHeader = true
 		}
 		response.Header().Set("Content-Type", "application/json")
+		if request.URL.Path == "/studio/v1/metadata/plan" {
+			var planRequest struct {
+				Entities       []provider.Entity `json:"entities"`
+				IdempotencyKey string            `json:"idempotency_key"`
+			}
+			if err := json.NewDecoder(request.Body).Decode(&planRequest); err != nil || len(planRequest.Entities) != 1 {
+				http.Error(response, "invalid plan", http.StatusBadRequest)
+				return
+			}
+			migrationVersion = planRequest.Entities[0].Version
+			_, _ = response.Write([]byte(`[{"entity_code":"orders","plan_code":"orders_storage","risk":"medium","summary":"Prepare Orders storage","requires_confirmation":true}]`))
+			return
+		}
+		if request.URL.Path == "/studio/v1/metadata/apply" {
+			var applyRequest struct {
+				Confirmation   string            `json:"confirmation"`
+				Entities       []provider.Entity `json:"entities"`
+				IdempotencyKey string            `json:"idempotency_key"`
+			}
+			if err := json.NewDecoder(request.Body).Decode(&applyRequest); err != nil || len(applyRequest.Entities) != 1 {
+				http.Error(response, "invalid apply", http.StatusBadRequest)
+				return
+			}
+			migrationConfirmation = applyRequest.Confirmation
+			migrationVersion = applyRequest.Entities[0].Version
+			migrationIdempotency = applyRequest.IdempotencyKey
+			_, _ = response.Write([]byte(`[{"entity_code":"orders","plan_code":"orders_storage","risk":"medium","summary":"Applied Orders storage","requires_confirmation":true}]`))
+			return
+		}
 		switch request.Method {
 		case http.MethodGet:
 			_ = json.NewEncoder(response).Encode(provider.EntityPage{Items: []provider.Entity{entity}, NextCursor: "page-2"})
@@ -143,6 +175,7 @@ func TestMetadataEditConflictAndAccessibilityFlow(t *testing.T) {
 
 	var dirtyGuarded bool
 	var accessibilityViolations []string
+	var migrationAccessibilityViolations []string
 	var browserStorage int
 	var bodyText string
 	if err = chromedp.Run(ctx,
@@ -165,6 +198,15 @@ func TestMetadataEditConflictAndAccessibilityFlow(t *testing.T) {
 		chromedp.SetValue("#entity-name", "Orders reconciled", chromedp.ByQuery),
 		chromedp.Click(`//button[contains(., 'Save guarded changes')]`, chromedp.BySearch),
 		chromedp.WaitVisible(`[role="status"]`, chromedp.ByQuery),
+		chromedp.Click(`//button[contains(., 'Review migration plan for Orders')]`, chromedp.BySearch),
+		chromedp.WaitVisible("#migration-confirmation", chromedp.ByQuery),
+		chromedp.Evaluate(`(() => { const failures=[]; if(document.documentElement.lang !== 'en') failures.push('language'); if(document.querySelectorAll('h1').length !== 1) failures.push('single-h1'); for(const field of document.querySelectorAll('input:not([type=hidden]),select,textarea')) { if(!field.id || !document.querySelector('label[for="'+CSS.escape(field.id)+'"]')) failures.push('label:'+field.name); } for(const target of document.querySelectorAll('a,button,input:not([type=hidden]),select,textarea')) { const box=target.getBoundingClientRect(); if(box.width < 24 || box.height < 24) failures.push('target:'+target.tagName); } return failures; })()`, &migrationAccessibilityViolations),
+		chromedp.SetValue("#migration-confirmation", "apply_migration", chromedp.ByQuery),
+		chromedp.Click(`//button[contains(., 'Apply reviewed migration')]`, chromedp.BySearch),
+		chromedp.WaitVisible(`[role="alert"]`, chromedp.ByQuery),
+		chromedp.SetValue("#migration-confirmation", provider.ApplyMigrationConfirmation, chromedp.ByQuery),
+		chromedp.Click(`//button[contains(., 'Apply reviewed migration')]`, chromedp.BySearch),
+		chromedp.WaitVisible(`//h1[contains(., 'Migration applied')]`, chromedp.BySearch),
 		chromedp.Evaluate(`localStorage.length + sessionStorage.length + document.cookie.length`, &browserStorage),
 		chromedp.Text("body", &bodyText, chromedp.ByQuery),
 	); err != nil {
@@ -187,10 +229,19 @@ func TestMetadataEditConflictAndAccessibilityFlow(t *testing.T) {
 	if unsafeBrowserHeader || providerTrustedHeader || !providerAuthorization {
 		t.Fatalf("unsafe header boundary: browser=%v provider_trusted=%v provider_authorized=%v", unsafeBrowserHeader, providerTrustedHeader, providerAuthorization)
 	}
+	if len(migrationAccessibilityViolations) != 0 {
+		t.Fatalf("migration accessibility checks failed: %v", migrationAccessibilityViolations)
+	}
 	if len(expectedVersions) != 2 || expectedVersions[0] != 4 || expectedVersions[1] != 5 {
 		t.Fatalf("expected versions=%v", expectedVersions)
 	}
 	if len(idempotencyKeys) != 2 || idempotencyKeys[0] == "" || idempotencyKeys[1] == "" {
 		t.Fatalf("idempotency keys=%v", idempotencyKeys)
+	}
+	if migrationConfirmation != provider.ApplyMigrationConfirmation || migrationVersion != 6 || migrationIdempotency == "" {
+		t.Fatalf("migration confirmation=%q version=%d idempotency=%q", migrationConfirmation, migrationVersion, migrationIdempotency)
+	}
+	if strings.Contains(strings.ToUpper(bodyText), "DROP TABLE") || !strings.Contains(bodyText, "Migration applied") {
+		t.Fatalf("unsafe or missing migration result: %q", bodyText)
 	}
 }
