@@ -14,7 +14,7 @@ import (
 	"sort"
 )
 
-const pinnedVersion = "1.0.0"
+const pinnedVersion = "1.1.0"
 
 var artifactNames = []string{"README.md", "client.ts", "fixtures.json", "manifest.json", "openapi.json"}
 

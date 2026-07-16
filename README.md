@@ -5,10 +5,10 @@ Jimu Studio is the all-Go, accessible administration interface for Jimu. It uses
 ## Pinned provider contract
 
 - Provider: `github.com/drkliu/jimu`
-- Provider commit: `610cfc13c69f`
-- Go pseudo-version: `v0.1.1-0.20260716034006-610cfc13c69f`
-- Studio contract: `1.0.0`
-- OpenAPI fingerprint: `e41ab114195abcf5791ae1f3d4eb402d1c1877d69d4c863e64880f5b79f0bf91`
+- Provider commit: `0a9a8c662f2b`
+- Go pseudo-version: `v0.1.1-0.20260716150217-0a9a8c662f2b`
+- Studio contract: `1.1.0`
+- OpenAPI fingerprint: `3a5a4bb8e35cb66ff3374f7a28d5d401684fcc56441aca85df75d64c8c922f19`
 
 The files in `contracts/studio/v1` are immutable generated artifacts. CI runs the pinned provider's `jimuctl studio verify` before application checks.
 
