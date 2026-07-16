@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jimu Studio</title>
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header>
+    <strong>Jimu Studio</strong>
+    {{if .Authenticated}}
+      <p>Signed in as {{.Session.DisplayName}} for <strong>{{.Session.TenantName}}</strong>.</p>
+      <form action="/auth/logout" method="post">
+        <input type="hidden" name="csrf" value="{{.Session.CSRF}}">
+        <button type="submit">Sign out</button>
+      </form>
+    {{end}}
+  </header>
+  {{if .Authenticated}}
+    <nav aria-label="Studio areas">
+      <ul>
+        {{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}
+      </ul>
+    </nav>
+  {{end}}
+  <main id="main" tabindex="-1">
+    {{if .Authenticated}}
+      <h1>Administration workspace</h1>
+      <p>Navigation reflects your identity claims for convenience. The Jimu provider remains authoritative for every request.</p>
+      <section aria-labelledby="tenant-heading">
+        <h2 id="tenant-heading">Switch tenant</h2>
+        <p>Switching signs in again and discards this tenant's cached and in-progress state.</p>
+        <form action="/auth/switch" method="post">
+          <input type="hidden" name="csrf" value="{{.Session.CSRF}}">
+          <label for="tenant">Tenant</label>
+          <select id="tenant" name="tenant" required>
+            {{range .Tenants}}<option value="{{.ID}}"{{if eq .ID $.Session.TenantID}} selected{{end}}>{{.Name}}</option>{{end}}
+          </select>
+          <button type="submit">Switch and sign in</button>
+        </form>
+      </section>
+    {{else}}
+      <h1>Sign in to Jimu Studio</h1>
+      <p>Choose a tenant. Authentication occurs at its configured OpenID Connect provider.</p>
+      <ul class="tenant-list">
+        {{range .Tenants}}
+          <li>
+            <form action="/auth/login" method="post">
+              <input type="hidden" name="tenant" value="{{.ID}}">
+              <button type="submit">Sign in to {{.Name}}</button>
+            </form>
+          </li>
+        {{end}}
+      </ul>
+    {{end}}
+  </main>
+</body>
+</html>
