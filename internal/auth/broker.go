@@ -146,7 +146,7 @@ func (broker *Broker) Complete(ctx context.Context, pendingID, state, code strin
 	if identity.Subject == "" || identity.AccessToken == "" || !boundedIdentity(identity) || !constantTimeEqual(identity.Nonce, pending.nonce) {
 		return SessionResult{}, errors.New("OIDC identity is incomplete or nonce is invalid")
 	}
-	client, err := broker.clientFactory(ctx, tenant.ProviderBaseURL, identity.AccessToken)
+	client, err := broker.clientFactory(context.WithoutCancel(ctx), tenant.ProviderBaseURL, identity.AccessToken)
 	if err != nil {
 		return SessionResult{}, fmt.Errorf("create tenant provider client: %w", err)
 	}

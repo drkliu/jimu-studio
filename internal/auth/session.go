@@ -34,7 +34,7 @@ func (broker *Broker) Session(ctx context.Context, sessionID string) (SessionVie
 			broker.invalidate(sessionID, session)
 			return SessionView{}, false
 		}
-		newClient, err := broker.clientFactory(ctx, tenant.ProviderBaseURL, token.AccessToken)
+		newClient, err := broker.clientFactory(context.WithoutCancel(ctx), tenant.ProviderBaseURL, token.AccessToken)
 		if err != nil {
 			session.mu.Unlock()
 			broker.invalidate(sessionID, session)

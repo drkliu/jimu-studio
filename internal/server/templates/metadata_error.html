@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{.Title}} — Jimu Studio</title><link rel="stylesheet" href="/assets/app.css"></head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1"><h1>{{.Title}}</h1><div role="alert"><p>{{.Message}}</p>{{if .RequestID}}<p>Request ID: <code>{{.RequestID}}</code></p>{{end}}</div><p><a href="/metadata">Return to metadata</a></p></main>
+</body>
+</html>

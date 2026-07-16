@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit {{.Entity.Name}} — Jimu Studio</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <script src="/assets/guard.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Edit {{.Entity.Name}}</h1>
+    <p><a href="/metadata">Back to metadata</a></p>
+    {{if .Message}}<div role="alert"><p>{{.Message}}</p>{{if .RequestID}}<p>Request ID: <code>{{.RequestID}}</code></p>{{end}}</div>{{end}}
+    {{if .CanEdit}}
+      <p>Saving requires the displayed version. If the provider has changed, Studio will stop and show both versions for reconciliation.</p>
+      <form action="/metadata/edit" method="post" data-dirty-guard>
+        <input type="hidden" name="csrf" value="{{.Session.CSRF}}">
+        <input type="hidden" name="code" value="{{.Entity.Code}}">
+        <input type="hidden" name="expected_version" value="{{.Entity.Version}}">
+        <input type="hidden" name="field_count" value="{{len .Entity.Fields}}">
+        <p>Entity code: <code>{{.Entity.Code}}</code> · expected version {{.Entity.Version}}</p>
+        <p><label for="entity-name">Name</label><input id="entity-name" name="name" value="{{.Entity.Name}}" maxlength="512" required></p>
+        <p><label for="entity-kind">Kind</label><input id="entity-kind" name="kind" value="{{.Entity.Kind}}" maxlength="128"></p>
+        <fieldset>
+          <legend>Fields</legend>
+          {{range $index, $field := .Entity.Fields}}
+            <section class="field-editor" aria-labelledby="field-heading-{{$index}}">
+              <h2 id="field-heading-{{$index}}">Field {{$field.Code}}</h2>
+              <p><label for="field-code-{{$index}}">Code</label><input id="field-code-{{$index}}" name="field_code_{{$index}}" value="{{$field.Code}}" maxlength="256" required></p>
+              <p><label for="field-type-{{$index}}">Data type</label><input id="field-type-{{$index}}" name="field_type_{{$index}}" value="{{$field.DataType}}" maxlength="256" required></p>
+              <p><input id="field-required-{{$index}}" type="checkbox" name="field_required_{{$index}}"{{if $field.Required}} checked{{end}}><label for="field-required-{{$index}}">Required</label></p>
+              <p><input id="field-read-only-{{$index}}" type="checkbox" name="field_read_only_{{$index}}"{{if $field.ReadOnly}} checked{{end}}><label for="field-read-only-{{$index}}">Read only</label></p>
+            </section>
+          {{end}}
+        </fieldset>
+        <button type="submit">Save guarded changes</button>
+      </form>
+    {{else}}<p role="note">Your identity claims do not include metadata editing. The provider remains authoritative.</p>{{end}}
+  </main>
+</body>
+</html>

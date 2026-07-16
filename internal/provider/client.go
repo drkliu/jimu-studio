@@ -69,7 +69,8 @@ func (client *Client) Close() {
 	client.once.Do(client.cancel)
 }
 
-func (client *Client) do(caller context.Context, method, path string, body io.Reader) (*http.Response, error) {
+// Do executes one request against the fixed provider origin.
+func (client *Client) Do(caller context.Context, method, path string, body io.Reader) (*http.Response, error) {
 	reference, err := url.Parse(path)
 	if err != nil || !strings.HasPrefix(path, "/") || strings.HasPrefix(path, "//") || reference.IsAbs() || reference.Host != "" {
 		return nil, errors.New("Studio provider path must be an absolute-path reference")
@@ -86,9 +87,16 @@ func (client *Client) do(caller context.Context, method, path string, body io.Re
 	}
 	request.Header.Set("Authorization", "Bearer "+client.token)
 	request.Header.Set("Accept", "application/json")
+	if body != nil {
+		request.Header.Set("Content-Type", "application/json")
+	}
 	response, err := client.http.Do(request)
 	if err != nil {
 		return response, err
 	}
 	return response, nil
+}
+
+func (client *Client) do(caller context.Context, method, path string, body io.Reader) (*http.Response, error) {
+	return client.Do(caller, method, path, body)
 }
