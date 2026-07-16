@@ -15,6 +15,7 @@ The files in `contracts/studio/v1` are immutable generated artifacts. CI runs th
 ## Development
 
 Go 1.26.5 is required.
+Runtime setup and the loopback-only development boundary are documented in [Studio configuration](docs/configuration.md).
 
 ```text
 go test ./...
