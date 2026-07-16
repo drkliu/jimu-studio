@@ -18,12 +18,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Checkout pinned private provider
+        uses: actions/checkout@v5
+        with:
+          repository: drkliu/jimu
+          ref: 610cfc13c69f
+          path: .provider
+          ssh-key: ${{ secrets.JIMU_PROVIDER_DEPLOY_KEY }}
+          persist-credentials: false
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
       - name: Verify pinned provider artifacts
-        run: go run github.com/drkliu/jimu/cmd/jimuctl@v0.1.1-0.20260716034006-610cfc13c69f studio verify --dir contracts/studio/v1
+        run: cd .provider && go run ./cmd/jimuctl studio verify --dir ../contracts/studio/v1
 
   quality:
     name: Go quality
