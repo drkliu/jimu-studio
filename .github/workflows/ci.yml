@@ -17,9 +17,9 @@ jobs:
     name: Contract 1.0.0
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Checkout pinned private provider
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           repository: drkliu/jimu
           ref: 610cfc13c69fc007cc835613d5f6302b42d94fa0
@@ -38,7 +38,7 @@ jobs:
     needs: contract
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
@@ -62,7 +62,7 @@ jobs:
     needs: contract
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
@@ -78,7 +78,7 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
@@ -91,7 +91,7 @@ jobs:
       security-events: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
