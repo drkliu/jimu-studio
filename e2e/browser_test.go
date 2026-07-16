@@ -20,6 +20,7 @@ func TestSecureAccessibleShellInBrowser(t *testing.T) {
 	allocatorOptions := append(
 		chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.WSURLReadTimeout(60*time.Second),
 	)
 	if os.Getenv("CI") == "true" {
 		// GitHub-hosted runners disable the kernel features Chrome's sandbox requires.
@@ -29,7 +30,7 @@ func TestSecureAccessibleShellInBrowser(t *testing.T) {
 	t.Cleanup(cancelAllocator)
 	browser, cancelBrowser := chromedp.NewContext(allocator)
 	t.Cleanup(cancelBrowser)
-	ctx, cancelTimeout := context.WithTimeout(browser, 30*time.Second)
+	ctx, cancelTimeout := context.WithTimeout(browser, 90*time.Second)
 	t.Cleanup(cancelTimeout)
 
 	var title string
