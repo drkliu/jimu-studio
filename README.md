@@ -26,6 +26,20 @@ go test -tags=e2e ./e2e
 
 The browser suite uses Chrome DevTools through Go. No Node.js toolchain is used.
 
+### Windows launcher
+
+Run Studio from Command Prompt or by double-clicking `run-local.bat`. With no argument it reads `STUDIO_CONFIG`, or falls back to `studio.local.json` beside the launcher. A config path may be supplied explicitly:
+
+```text
+run-local.bat "D:\path\to\studio-config.json"
+```
+
+Run the complete local Go verification matrix with:
+
+```text
+run-local.bat test
+```
+
 ## Release acceptance
 
 The first supported release is [`v1.0.0`](https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0). Its machine-readable record is `release/acceptance.json`, with the rendered acceptance matrix, known limitations, rollback procedure, and provenance in [the v1.0.0 acceptance record](docs/releases/v1.0.0-acceptance.md).
