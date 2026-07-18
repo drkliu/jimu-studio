@@ -41,27 +41,27 @@ Phase exit: the S6 branch contains a truthful, machine-checkable release candida
 
 Run from a clean S6 tree with Go 1.26.5:
 
-1. [ ] Verify `contracts/studio/v1` with the pinned provider CLI.
-2. [ ] Require `gofmt -l .` to return no files.
-3. [ ] Run `go test ./... -count=1`.
-4. [ ] Run `go test -race ./... -count=1`.
-5. [ ] Run `go vet ./...`.
-6. [ ] Run `go build ./cmd/studio`.
-7. [ ] Run module/dependency and vulnerability checks used by protected CI.
-8. [ ] Compile the browser suite locally. Run it locally when Chrome is available, but treat protected Linux `go test -tags=e2e -timeout=2m ./e2e` as authoritative.
-9. [ ] Review tenant isolation, OIDC/CSRF boundaries, provider redirects, bounded inputs/responses, role gates, idempotency, expected-version conflicts, confirmations, redaction, and absence of secrets/raw SQL/workflow internals.
-10. [ ] Confirm the release diff contains only acceptance/closeout work or separately explained corrective changes.
+1. [x] Verify `contracts/studio/v1` with the pinned provider CLI.
+2. [x] Require repository Go sources to have clean `gofmt` output.
+3. [x] Run `go test ./... -count=1`.
+4. [x] Run `go test -race ./... -count=1`.
+5. [x] Run `go vet ./...`.
+6. [x] Run `go build ./cmd/studio`.
+7. [x] Run module verification; protected dependency review, vulnerability, and CodeQL succeeded.
+8. [x] Compile the browser suite locally; local Windows Chrome was unavailable, and protected Linux browser E2E succeeded in CI `29640474590`.
+9. [x] Review tenant isolation, OIDC/CSRF, redirects, bounds, roles, idempotency, versions, confirmations, redaction, secrets, and provider internals.
+10. [x] Confirm the release diff contains only acceptance/closeout work.
 
 Phase exit: all local gates possible in the environment are green and the candidate is ready for protected CI.
 
 ## Phase 4 - Merge S6
 
-1. [ ] Commit and push the S6 branch; open one focused PR linking this spec and plan.
-2. [ ] Wait for contract, Go quality/race, browser E2E, dependency review, vulnerability, CodeQL, and any branch-protection checks. Record exact run IDs and the candidate commit.
-3. [ ] Review the rendered documentation and compare every provenance value with the provider manifest, Git commit, and GitHub runs.
-4. [ ] Obtain explicit authorization for any administrator override or merge. PR #18 authorization is not reusable.
-5. [ ] Merge once, fetch protected `main`, identify the exact S6 squash commit, and wait for post-merge CI and CodeQL on it.
-6. [ ] If the squash commit changes a commit-bound provenance field, create the smallest possible evidence-finalization PR, rerun all required checks, and merge it before tagging. Do not amend or force-push protected `main`.
+1. [x] Commit and push S6; open focused PR #20.
+2. [x] Require green contract, Go quality/race, browser E2E, dependency review, vulnerability, and CodeQL on head `964226e063e74315239e816ea8ad07b0e22e4e3f`.
+3. [x] Review documentation and provenance against provider manifest, Git, and GitHub runs.
+4. [x] Perform the separately approved S6 merge without an administrator override.
+5. [x] Merge once at `3ecc4c0a70a5d29da9e929b56dbef97241cbdf5e`; protected CI `29640474590` and CodeQL `29640474587` succeeded.
+6. [ ] Merge this smallest-possible evidence-finalization PR before tagging; do not amend or force-push protected `main`.
 
 Phase exit: the final release candidate commit and complete protected evidence are on `main` and no tag/release yet exists.
 

@@ -188,6 +188,18 @@ func verifyState(record acceptance) error {
 				return fmt.Errorf("candidate gate %q claims completed evidence", gate.Name)
 			}
 		}
+	case "accepted":
+		if !fullCommit.MatchString(record.Release.SourceCommit) {
+			return fmt.Errorf("accepted record has incomplete source identity")
+		}
+		if record.Release.URL != "" || record.Release.PublishedAt != "" {
+			return fmt.Errorf("accepted record claims published release facts")
+		}
+		for _, gate := range record.Evidence {
+			if gate.RunID <= 0 || gate.Conclusion != "success" {
+				return fmt.Errorf("accepted gate %q is incomplete", gate.Name)
+			}
+		}
 	case "released":
 		if !fullCommit.MatchString(record.Release.SourceCommit) || record.Release.URL == "" {
 			return fmt.Errorf("released record has incomplete source identity")
