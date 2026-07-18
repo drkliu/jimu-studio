@@ -2,14 +2,20 @@
   "provider_commit": "0a9a8c662f2b",
   "contract_version": "1.1.0",
   "external_repository": "github.com/drkliu/jimu-studio",
-  "last_merged_slice": "S5",
-  "last_merged_commit": "f02a750141b122703e57e6c715adf1c98c0141ee",
-  "active_slice": "S6",
-  "active_branch": "feature/s6-release-acceptance",
+  "last_merged_slice": "S6",
+  "last_merged_commit": "2db2c8bcd877174c068f65ed034303c876da7834",
+  "active_slice": null,
+  "active_branch": null,
   "post_merge_evidence": {
-    "ci_run": 29639714157,
-    "codeql_run": 29639714159
+    "ci_run": 29640625780,
+    "codeql_run": 29640625770
   },
-  "release": null,
-  "updated_at": "2026-07-18T09:47:00Z"
+  "release": {
+    "tag": "v1.0.0",
+    "tag_object": "8fdb63b7e5b0b7047a21c60995db85b9b1e1631a",
+    "commit": "2db2c8bcd877174c068f65ed034303c876da7834",
+    "url": "https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0",
+    "published_at": "2026-07-18T10:24:01Z"
+  },
+  "updated_at": "2026-07-18T10:24:01Z"
 }

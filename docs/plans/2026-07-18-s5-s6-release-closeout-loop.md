@@ -4,7 +4,7 @@ Spec: `docs/specs/2026-07-18-s5-s6-release-closeout-design.md`
 
 Plan: `docs/plans/2026-07-18-s5-s6-release-closeout.md`
 
-Current grounded cursor: S5 merged through PR #18 at `f02a750141b122703e57e6c715adf1c98c0141ee`; protected CI `29639714157` and CodeQL `29639714159` succeeded. Reconciliation PR #19 merged at `61c5b7cd711d5516472aa0a3718e711f314caebc`; protected CI `29639992477` and CodeQL `29639992443` succeeded. S6 is active on `feature/s6-release-acceptance`; no Studio tag or release is claimed.
+Current grounded cursor: S5 merged through PR #18 at `f02a750141b122703e57e6c715adf1c98c0141ee`; reconciliation PR #19 merged at `61c5b7cd711d5516472aa0a3718e711f314caebc`. S6 merged through PR #20 at `3ecc4c0a70a5d29da9e929b56dbef97241cbdf5e`; evidence PR #21 merged at release commit `2db2c8bcd877174c068f65ed034303c876da7834`. Annotated tag and non-draft, non-prerelease GitHub release `v1.0.0` were read back at that commit. Final cursor closeout is active.
 
 ## Terminal objective
 

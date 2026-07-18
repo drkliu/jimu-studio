@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestVerifyAcceptedReleaseAcceptance(t *testing.T) {
+func TestVerifyReleasedAcceptance(t *testing.T) {
 	root := repositoryRoot(t)
 	if err := Verify(root); err != nil {
 		t.Fatalf("Verify() error = %v", err)
@@ -22,7 +22,7 @@ func TestVerifyRejectsAcceptedReleaseClaims(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	contents = []byte(strings.Replace(string(contents), `"url": ""`, `"url": "https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0"`, 1))
+	contents = []byte(strings.Replace(string(contents), `"status": "released"`, `"status": "accepted"`, 1))
 	if err = os.WriteFile(path, contents, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -47,14 +47,14 @@ func TestVerifyRejectsContractDigestDrift(t *testing.T) {
 	}
 }
 
-func TestVerifyRejectsIncompleteReleasedEvidence(t *testing.T) {
+func TestVerifyRejectsIncompleteReleasedSource(t *testing.T) {
 	root := copyMetadata(t)
 	path := filepath.Join(root, "release", "acceptance.json")
 	contents, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	contents = []byte(strings.Replace(string(contents), `"status": "accepted"`, `"status": "released"`, 1))
+	contents = []byte(strings.Replace(string(contents), `"source_commit": "2db2c8bcd877174c068f65ed034303c876da7834"`, `"source_commit": ""`, 1))
 	if err = os.WriteFile(path, contents, 0o600); err != nil {
 		t.Fatal(err)
 	}

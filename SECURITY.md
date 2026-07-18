@@ -4,6 +4,11 @@ Report vulnerabilities privately through GitHub Security Advisories for `drkliu/
 
 ## Supported versions
 
-No version is supported until the proposed `v1.0.0` GitHub release is published. After publication, the support table will be finalized from the observed release state; the `main` branch and a candidate record are not substitutes for a supported release.
+| Version | Supported |
+|---|---|
+| `v1.0.x` | Yes |
+| `< v1.0.0` | No |
+
+The `main` branch is not a substitute for a supported release.
 
 No remediation SLA is promised by this repository. Security advisories will state severity, affected versions, mitigations, and release availability from verified evidence.

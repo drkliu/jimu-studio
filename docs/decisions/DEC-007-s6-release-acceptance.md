@@ -19,3 +19,7 @@ The selected release model is an annotated `v1.0.0` source/commit release with a
 ## Verification plan
 
 Run the pinned provider verifier, release/contract tests, full unit and race suites, formatting, vet, build, vulnerability/dependency checks, CodeQL, and protected Go browser E2E. Merge the S6 candidate only after all checks succeed, publish only the accepted commit, then finalize observed release facts and the cursor through a separate green closeout PR.
+
+## Outcome
+
+S6 merged through PR #20 at `3ecc4c0a70a5d29da9e929b56dbef97241cbdf5e`. Evidence finalization merged through PR #21 at `2db2c8bcd877174c068f65ed034303c876da7834`; protected CI `29640625780` and CodeQL `29640625770` succeeded. Annotated tag `v1.0.0` dereferences to that commit, and the non-draft, non-prerelease GitHub release was published at `2026-07-18T10:24:01Z`.
