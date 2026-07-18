@@ -1,6 +1,6 @@
 # BLK-003: Studio 1.0.0 cannot safely retry or describe workflow tasks
 
-Status: blocking S5 on 2026-07-16
+Status: resolved on 2026-07-16 by provider contract 1.1.0 at `0a9a8c662f2b`
 
 ## Reconciled evidence
 
@@ -40,3 +40,7 @@ Choose one:
 Separately, confirm whether quota and audit partial work may proceed while option 1 is pending. It will remain an incomplete S5 and will not be released as roadmap completion.
 
 No task workflow implementation or contract workaround will proceed until one decision is recorded.
+
+## Resolution
+
+Provider contract 1.1.0 was published and merged with bounded task discovery, authoritative task versions, timing, redacted error codes, and lease/recovery state. Studio repinned the generated artifact bundle byte-for-byte and recorded the implementation constraints in DEC-006.

@@ -1,6 +1,6 @@
 {
-  "provider_commit": "610cfc13c69f",
-  "contract_version": "1.0.0",
+  "provider_commit": "0a9a8c662f2b",
+  "contract_version": "1.1.0",
   "external_repository": "github.com/drkliu/jimu-studio",
   "last_merged_slice": "S4",
   "last_merged_commit": "a4c1d6f4ac7841ce39be6d9cf88fcedf7413add6",
