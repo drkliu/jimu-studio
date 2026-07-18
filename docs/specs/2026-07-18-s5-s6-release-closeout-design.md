@@ -1,6 +1,6 @@
 # Jimu Studio S5-S6 Release Closeout Design
 
-Status: accepted and executing on 2026-07-18
+Status: complete on 2026-07-18 through `v1.0.0` and closeout PR #22
 
 ## Purpose
 

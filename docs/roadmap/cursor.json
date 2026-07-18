@@ -17,5 +17,10 @@
     "url": "https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0",
     "published_at": "2026-07-18T10:24:01Z"
   },
-  "updated_at": "2026-07-18T10:24:01Z"
+  "closeout": {
+    "commit": "de533b4a86d4c44101a8619d41f072b3e8e2b1a5",
+    "ci_run": 29640948113,
+    "codeql_run": 29640947998
+  },
+  "updated_at": "2026-07-18T10:31:30Z"
 }
