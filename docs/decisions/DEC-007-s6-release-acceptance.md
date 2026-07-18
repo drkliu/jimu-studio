@@ -23,3 +23,5 @@ Run the pinned provider verifier, release/contract tests, full unit and race sui
 ## Outcome
 
 S6 merged through PR #20 at `3ecc4c0a70a5d29da9e929b56dbef97241cbdf5e`. Evidence finalization merged through PR #21 at `2db2c8bcd877174c068f65ed034303c876da7834`; protected CI `29640625780` and CodeQL `29640625770` succeeded. Annotated tag `v1.0.0` dereferences to that commit, and the non-draft, non-prerelease GitHub release was published at `2026-07-18T10:24:01Z`.
+
+Final cursor closeout merged through PR #22 at `de533b4a86d4c44101a8619d41f072b3e8e2b1a5`; protected CI `29640948113` and CodeQL `29640947998` succeeded. No S0-S6 work or unresolved blocker remains.

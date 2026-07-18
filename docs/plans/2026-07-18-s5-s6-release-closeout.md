@@ -4,7 +4,7 @@ Spec: `docs/specs/2026-07-18-s5-s6-release-closeout-design.md`
 
 Execution loop: `docs/plans/2026-07-18-s5-s6-release-closeout-loop.md`
 
-Status: in progress; phases 1 and S5 reconciliation are complete, S6 candidate implementation is active
+Status: complete through release `v1.0.0` and closeout PR #22
 
 ## Execution rules
 
@@ -61,7 +61,7 @@ Phase exit: all local gates possible in the environment are green and the candid
 3. [x] Review documentation and provenance against provider manifest, Git, and GitHub runs.
 4. [x] Perform the separately approved S6 merge without an administrator override.
 5. [x] Merge once at `3ecc4c0a70a5d29da9e929b56dbef97241cbdf5e`; protected CI `29640474590` and CodeQL `29640474587` succeeded.
-6. [ ] Merge this smallest-possible evidence-finalization PR before tagging; do not amend or force-push protected `main`.
+6. [x] Merge evidence-finalization PR #21 at `2db2c8bcd877174c068f65ed034303c876da7834` before tagging; protected CI `29640625780` and CodeQL `29640625770` succeeded.
 
 Phase exit: the final release candidate commit and complete protected evidence are on `main` and no tag/release yet exists.
 
@@ -80,9 +80,9 @@ Phase exit: `v1.0.0` exists, resolves to the accepted protected commit, and expo
 1. [x] Create final branch `chore/v1.0.0-closeout` from the released `main` commit.
 2. [x] Update acceptance and cursor with only read-back release facts; set S6 terminal state and clear the active slice/branch.
 3. [x] List `v1.0.x` as supported without inventing an SLA.
-4. [ ] Validate JSON and documentation links, rerun the complete contract/unit/race/vet/build/browser/security matrix, and open the final closeout PR.
-5. [ ] Obtain separate merge authorization if required, merge once, and record protected post-merge CI/CodeQL.
-6. [ ] Verify the repository is clean, the release remains attached to an ancestor of the closeout commit, all S0-S6 records agree, and there is no open roadmap PR or unresolved blocker.
+4. [x] Validate JSON/documentation consistency, rerun contract/unit/race/vet/build/browser/security gates, and open final closeout PR #22.
+5. [x] Merge PR #22 once at `de533b4a86d4c44101a8619d41f072b3e8e2b1a5`; protected CI `29640948113` and CodeQL `29640947998` succeeded.
+6. [x] Verify the release commit is an ancestor of closeout, S0-S6 records agree, no roadmap PR remains open, and no unresolved blocker exists.
 
 Terminal exit: code, contract, tests, protected CI, release, security support statement, provenance, rollback, limitations, and cursor all agree. Only then may the S0-S6 execution goal be marked complete.
 

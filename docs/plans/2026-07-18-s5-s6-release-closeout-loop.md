@@ -4,7 +4,7 @@ Spec: `docs/specs/2026-07-18-s5-s6-release-closeout-design.md`
 
 Plan: `docs/plans/2026-07-18-s5-s6-release-closeout.md`
 
-Current grounded cursor: S5 merged through PR #18 at `f02a750141b122703e57e6c715adf1c98c0141ee`; reconciliation PR #19 merged at `61c5b7cd711d5516472aa0a3718e711f314caebc`. S6 merged through PR #20 at `3ecc4c0a70a5d29da9e929b56dbef97241cbdf5e`; evidence PR #21 merged at release commit `2db2c8bcd877174c068f65ed034303c876da7834`. Annotated tag and non-draft, non-prerelease GitHub release `v1.0.0` were read back at that commit. Final cursor closeout is active.
+Current grounded cursor: terminal. S5 merged through PR #18; reconciliation PR #19 merged; S6 merged through PR #20; evidence PR #21 produced release commit `2db2c8bcd877174c068f65ed034303c876da7834`; annotated tag and non-draft, non-prerelease release `v1.0.0` were read back at that commit. Final cursor closeout PR #22 merged at `de533b4a86d4c44101a8619d41f072b3e8e2b1a5`; protected CI `29640948113` and CodeQL `29640947998` succeeded. The terminal objective is proven.
 
 ## Terminal objective
 
