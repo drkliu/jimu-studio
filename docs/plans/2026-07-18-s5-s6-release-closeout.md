@@ -67,19 +67,19 @@ Phase exit: the final release candidate commit and complete protected evidence a
 
 ## Phase 5 - Publish `v1.0.0`
 
-1. [ ] Present the exact candidate commit, evidence, proposed tag, release notes, known limitations, and rollback target; obtain explicit tag/release authorization.
-2. [ ] Re-check that no tag or release named `v1.0.0` exists and that protected `main` still points at the accepted commit.
-3. [ ] Create an annotated `v1.0.0` tag on that exact commit and push only that tag.
-4. [ ] Create a non-draft, non-prerelease GitHub release from the same tag. Include provider/contract pins, acceptance evidence, supported matrix, limitations, rollback, and provenance.
-5. [ ] Read the tag and release back from GitHub. Record the immutable URL, commit, publication time, and any release workflow evidence. If read-back differs, stop and report it; do not silently retarget or recreate a published tag.
+1. [x] Present exact commit `2db2c8bcd877174c068f65ed034303c876da7834`, evidence, tag, notes, limitations, and rollback; obtain explicit publication authorization.
+2. [x] Confirm no `v1.0.0` tag/release existed and protected `main` was the accepted commit.
+3. [x] Create and push annotated tag `v1.0.0` at that exact commit.
+4. [x] Create the non-draft, non-prerelease GitHub release with the accepted evidence and limitations.
+5. [x] Read back tag object `8fdb63b7e5b0b7047a21c60995db85b9b1e1631a`, exact commit, URL, and publication time `2026-07-18T10:24:01Z`.
 
 Phase exit: `v1.0.0` exists, resolves to the accepted protected commit, and exposes complete release evidence.
 
 ## Phase 6 - Final cursor closeout
 
-1. [ ] Create a final closeout branch from the released `main` commit.
-2. [ ] Update the acceptance record and cursor with only observed release facts. Set `last_merged_slice` to S6, record the exact closeout ancestry/evidence, set `release` to the real tag/URL/commit/time, and clear `active_slice` and `active_branch` using the cursor's documented terminal representation.
-3. [ ] Update `SECURITY.md` to list `v1.0.0` as supported without inventing an SLA.
+1. [x] Create final branch `chore/v1.0.0-closeout` from the released `main` commit.
+2. [x] Update acceptance and cursor with only read-back release facts; set S6 terminal state and clear the active slice/branch.
+3. [x] List `v1.0.x` as supported without inventing an SLA.
 4. [ ] Validate JSON and documentation links, rerun the complete contract/unit/race/vet/build/browser/security matrix, and open the final closeout PR.
 5. [ ] Obtain separate merge authorization if required, merge once, and record protected post-merge CI/CodeQL.
 6. [ ] Verify the repository is clean, the release remains attached to an ancestor of the closeout commit, all S0-S6 records agree, and there is no open roadmap PR or unresolved blocker.

@@ -28,6 +28,6 @@ The browser suite uses Chrome DevTools through Go. No Node.js toolchain is used.
 
 ## Release acceptance
 
-The proposed first supported release is `v1.0.0`. Its machine-readable candidate record is `release/acceptance.json`, with the rendered acceptance matrix, known limitations, rollback procedure, and provenance in [the v1.0.0 acceptance record](docs/releases/v1.0.0-acceptance.md).
+The first supported release is [`v1.0.0`](https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0). Its machine-readable record is `release/acceptance.json`, with the rendered acceptance matrix, known limitations, rollback procedure, and provenance in [the v1.0.0 acceptance record](docs/releases/v1.0.0-acceptance.md).
 
-No tag or release is claimed until the GitHub objects exist and the final closeout record is merged. The current packaging claim is source/commit only; no reproducible binary or container image is advertised.
+The packaging claim is source/commit only; no reproducible binary or container image is advertised.
