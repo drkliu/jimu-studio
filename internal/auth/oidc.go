@@ -42,6 +42,10 @@ func NewOIDCProvider(ctx context.Context, config OIDCConfig) (*OIDCProvider, err
 	if !safeClaimName.MatchString(config.RoleClaim) {
 		return nil, errors.New("OIDC role claim name is invalid")
 	}
+	scopes := []string{oidc.ScopeOpenID, "profile", "email", "offline_access"}
+	if config.RoleClaim == "groups" {
+		scopes = append(scopes, "groups")
+	}
 	discovery, err := oidc.NewProvider(ctx, config.Issuer)
 	if err != nil {
 		return nil, fmt.Errorf("discover OIDC provider: %w", err)
@@ -52,7 +56,7 @@ func NewOIDCProvider(ctx context.Context, config OIDCConfig) (*OIDCProvider, err
 			ClientSecret: config.ClientSecret,
 			Endpoint:     discovery.Endpoint(),
 			RedirectURL:  config.RedirectURL,
-			Scopes:       []string{oidc.ScopeOpenID, "profile", "email", "offline_access"},
+			Scopes:       scopes,
 		},
 		verifier:  discovery.Verifier(&oidc.Config{ClientID: config.ClientID}),
 		roleClaim: config.RoleClaim,

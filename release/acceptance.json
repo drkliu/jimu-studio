@@ -1,47 +1,46 @@
 {
-  "schema_version": 1,
-  "status": "released",
-  "studio_version": "1.0.0",
+  "schema_version": 2,
+  "status": "candidate",
+  "studio_version": "1.1.0",
   "go_version": "go1.26.5",
   "packaging": "source-commit; no binary reproducibility claim",
   "provider": {
     "repository": "github.com/drkliu/jimu",
-    "commit": "0a9a8c662f2b",
-    "go_version": "v0.1.1-0.20260716150217-0a9a8c662f2b"
+    "commit": "bf130c33ba3d47bb7239d238b241b853df72f24e",
+    "go_version": "v0.1.1-0.20260719044115-bf130c33ba3d"
   },
   "contract": {
-    "version": "1.1.0",
-    "source_fingerprint": "3a5a4bb8e35cb66ff3374f7a28d5d401684fcc56441aca85df75d64c8c922f19",
+    "version": "1.2.0",
+    "source_fingerprint": "f797f4650bb62753dc09adb9a713b2b45a54c1b70b58365c9466a404d45ac52e",
     "sha256": {
       "README.md": "8edd303af23706850b8f62dbe80d3b209502994fb86c6fba01535052f229b132",
-      "client.ts": "d175068d9750c91807aa93d3de6674549a2cdd5b8d166c6b64c6de08ba425357",
-      "fixtures.json": "e54b26ff5cfb3b07f904a7db621fe6c30b80a257665b2325897743ea8b462b85",
-      "openapi.json": "b5285c14146708a1e1774511ba0fd2dff5db73385f0aeba350fc5a45c1838b01"
+      "client.ts": "4169fdb74bbdcd94b9b259fac342f077214f0550e652b924e1ffae1b41c8e642",
+      "fixtures.json": "abdb30f8cfa1530f27ebaba2034ef90d383446db2bde3d464a6ac7d35694e0f5",
+      "openapi.json": "50c90607236afb5516e2620ee855c34e843905e65457593538a748707c427525"
     }
   },
   "baseline": {
-    "s5_merge_commit": "f02a750141b122703e57e6c715adf1c98c0141ee",
-    "s5_ci_run": 29639714157,
-    "s5_codeql_run": 29639714159,
-    "reconciliation_commit": "61c5b7cd711d5516472aa0a3718e711f314caebc",
-    "reconciliation_ci_run": 29639992477,
-    "reconciliation_codeql_run": 29639992443
+    "previous_release_commit": "2db2c8bcd877174c068f65ed034303c876da7834",
+    "previous_release_tag": "v1.0.0",
+    "provider_contract_pr": 64,
+    "provider_contract_run": 29673464926,
+    "provider_contract_commit": "bf130c33ba3d47bb7239d238b241b853df72f24e"
   },
   "release": {
-    "tag": "v1.0.0",
-    "source_commit": "2db2c8bcd877174c068f65ed034303c876da7834",
-    "url": "https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0",
-    "published_at": "2026-07-18T10:24:01Z"
+    "tag": "v1.1.0",
+    "source_commit": "",
+    "url": "",
+    "published_at": ""
   },
   "evidence": [
-    {"name": "contract", "run_id": 29640625780, "conclusion": "success"},
-    {"name": "format", "run_id": 29640625780, "conclusion": "success"},
-    {"name": "vet", "run_id": 29640625780, "conclusion": "success"},
-    {"name": "unit-race-build", "run_id": 29640625780, "conclusion": "success"},
-    {"name": "browser-e2e", "run_id": 29640625780, "conclusion": "success"},
-    {"name": "dependency-review", "run_id": 29640576072, "conclusion": "success"},
-    {"name": "vulnerability", "run_id": 29640625780, "conclusion": "success"},
-    {"name": "codeql", "run_id": 29640625770, "conclusion": "success"}
+    {"name": "contract", "run_id": 0, "conclusion": "pending"},
+    {"name": "format", "run_id": 0, "conclusion": "pending"},
+    {"name": "vet", "run_id": 0, "conclusion": "pending"},
+    {"name": "unit-race-build", "run_id": 0, "conclusion": "pending"},
+    {"name": "browser-e2e", "run_id": 0, "conclusion": "pending"},
+    {"name": "dependency-review", "run_id": 0, "conclusion": "pending"},
+    {"name": "vulnerability", "run_id": 0, "conclusion": "pending"},
+    {"name": "codeql", "run_id": 0, "conclusion": "pending"}
   ],
   "supported": {
     "deployment": "single Go process behind production TLS termination",
@@ -49,18 +48,18 @@
     "go_only": true
   },
   "known_limitations": [
-    "Sessions and operator state are volatile process memory; restart logs users out and there is no shared-session failover.",
-    "TLS termination, secret injection, supervision, provider backups, and provider HTTP handler bindings are deployment-owner responsibilities.",
-    "Studio is fixed to provider contract 1.1.0 at the pinned provider commit and does not negotiate contract versions.",
-    "Only Chrome on protected Ubuntu CI is release-certified; Firefox and Safari are not certified for v1.0.0.",
-    "Metadata relationship behavior is limited to fields in the frozen contract and is never inferred from names.",
+    "Sessions, reviewed drafts, and idempotency state are volatile process memory; restart logs users out and there is no shared-session failover.",
+    "TLS termination, secret injection, supervision, persistent Provider storage, backups, and Provider authorization are deployment-owner responsibilities.",
+    "Studio is fixed to Provider contract 1.2.0 at the pinned Provider commit and does not negotiate contract versions.",
+    "Only Chrome on protected Ubuntu CI is release-certified; Firefox and Safari are not certified for v1.1.0.",
     "Usage and discrepancy pages are observational and are not synchronous quota-enforcement authority.",
     "Audit details are not rendered or exported beyond bounded redacted fields and redacted paths.",
     "Studio exposes no password, token, certificate, raw SQL, workflow payload/result, worker identity, or fencing-token administration.",
+    "The native local Provider is non-persistent test infrastructure and is not a production Provider deployment.",
     "The release is source/commit based and makes no reproducible binary or container-image claim."
   ],
   "rollback": {
-    "fallback_commit": "f02a750141b122703e57e6c715adf1c98c0141ee",
+    "fallback_commit": "2db2c8bcd877174c068f65ed034303c876da7834",
     "requires_reauthentication": true,
     "reverses_provider_mutations": false
   }

@@ -42,6 +42,8 @@ type metadataEditData struct {
 	Navigation []navigationItem
 	Entity     provider.Entity
 	CanEdit    bool
+	CanDelete  bool
+	IsCreate   bool
 	Message    string
 	RequestID  string
 }
@@ -124,10 +126,34 @@ func (server *authenticatedServer) metadataEdit(response http.ResponseWriter, re
 	}
 	renderTemplate(response, http.StatusOK, metadataEditTemplate, metadataEditData{
 		Session: session, Navigation: allowedNavigation(session), Entity: entity, CanEdit: session.HasRole("studio.metadata.write"),
+		CanDelete: session.HasRole("studio.metadata.apply"),
+	})
+}
+
+func (server *authenticatedServer) metadataNew(response http.ResponseWriter, request *http.Request) {
+	_, session, ok := server.authenticatedSession(response, request)
+	if !ok {
+		return
+	}
+	if !session.HasRole("studio.metadata.write") {
+		http.Error(response, "metadata write permission required", http.StatusForbidden)
+		return
+	}
+	renderTemplate(response, http.StatusOK, metadataEditTemplate, metadataEditData{
+		Session: session, Navigation: allowedNavigation(session), Entity: provider.Entity{Fields: []provider.Field{{}}},
+		CanEdit: true, IsCreate: true,
 	})
 }
 
 func (server *authenticatedServer) metadataSave(response http.ResponseWriter, request *http.Request) {
+	server.metadataMutate(response, request, false)
+}
+
+func (server *authenticatedServer) metadataCreate(response http.ResponseWriter, request *http.Request) {
+	server.metadataMutate(response, request, true)
+}
+
+func (server *authenticatedServer) metadataMutate(response http.ResponseWriter, request *http.Request, create bool) {
 	if !sameSiteMutation(request) {
 		http.Error(response, "cross-site metadata mutation rejected", http.StatusForbidden)
 		return
@@ -152,11 +178,22 @@ func (server *authenticatedServer) metadataSave(response http.ResponseWriter, re
 	entity, expectedVersion, err := parseMetadataEntity(request.PostForm)
 	if err != nil {
 		renderTemplate(response, http.StatusBadRequest, metadataEditTemplate, metadataEditData{
-			Session: session, Navigation: allowedNavigation(session), Entity: entity, CanEdit: true, Message: err.Error(),
+			Session: session, Navigation: allowedNavigation(session), Entity: entity, CanEdit: true, IsCreate: create, Message: err.Error(),
 		})
 		return
 	}
-	scope := "metadata:" + entity.Code + ":" + strconv.FormatInt(expectedVersion, 10)
+	if create && expectedVersion != 0 {
+		renderTemplate(response, http.StatusBadRequest, metadataEditTemplate, metadataEditData{
+			Session: session, Navigation: allowedNavigation(session), Entity: entity, CanEdit: true, IsCreate: true,
+			Message: "A new entity must start at expected version 0.",
+		})
+		return
+	}
+	operation := "update"
+	if create {
+		operation = "create"
+	}
+	scope := "metadata:" + operation + ":" + entity.Code + ":" + strconv.FormatInt(expectedVersion, 10)
 	idempotencyKey, err := server.broker.DraftKey(sessionID, scope)
 	if err != nil {
 		server.renderMetadataError(response, session, err)
@@ -191,7 +228,7 @@ func (server *authenticatedServer) metadataSave(response http.ResponseWriter, re
 	}
 	if errors.As(err, &apiError) && apiError.Status == http.StatusBadRequest {
 		renderTemplate(response, http.StatusBadRequest, metadataEditTemplate, metadataEditData{
-			Session: session, Navigation: allowedNavigation(session), Entity: entity, CanEdit: true, Message: apiError.Message, RequestID: apiError.RequestID,
+			Session: session, Navigation: allowedNavigation(session), Entity: entity, CanEdit: true, IsCreate: create, Message: apiError.Message, RequestID: apiError.RequestID,
 		})
 		return
 	}

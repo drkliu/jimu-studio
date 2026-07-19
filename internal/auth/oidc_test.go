@@ -29,7 +29,7 @@ func TestOIDCProviderUsesPKCEAndVerifiesSignedIdentity(t *testing.T) {
 		t.Helper()
 		return signedTestToken(t, key, map[string]any{
 			"iss": issuer, "aud": "studio-client", "sub": "operator", "name": "Operator",
-			"nonce": nonce, "roles": []string{"studio.metadata.read"},
+			"nonce": nonce, "groups": []string{"studio.metadata.read"},
 			"iat": time.Now().Add(-time.Minute).Unix(), "exp": time.Now().Add(time.Hour).Unix(),
 		})
 	}
@@ -69,7 +69,7 @@ func TestOIDCProviderUsesPKCEAndVerifiesSignedIdentity(t *testing.T) {
 	t.Cleanup(server.Close)
 
 	provider, err := NewOIDCProvider(context.Background(), OIDCConfig{
-		Issuer: issuer, ClientID: "studio-client", ClientSecret: t.Name(), RedirectURL: issuer + "/callback", RoleClaim: "roles",
+		Issuer: issuer, ClientID: "studio-client", ClientSecret: t.Name(), RedirectURL: issuer + "/callback", RoleClaim: "groups",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -80,6 +80,9 @@ func TestOIDCProviderUsesPKCEAndVerifiesSignedIdentity(t *testing.T) {
 	}
 	if authorization.Query().Get("state") != "state-value" || authorization.Query().Get("nonce") != "nonce-value" || authorization.Query().Get("code_challenge_method") != "S256" || authorization.Query().Get("code_challenge") != "challenge-value" {
 		t.Fatalf("authorization URL omitted OIDC/PKCE proof: %s", authorization.String())
+	}
+	if !strings.Contains(" "+authorization.Query().Get("scope")+" ", " groups ") {
+		t.Fatalf("authorization URL omitted configured groups scope: %s", authorization.String())
 	}
 	identity, err := provider.Exchange(context.Background(), ExchangeRequest{Code: "single-use-code", Verifier: "verifier-value", ExpectedNonce: "nonce-value"})
 	if err != nil {

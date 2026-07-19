@@ -1,14 +1,14 @@
 {
   "provider_repository": "github.com/drkliu/jimu",
-  "provider_commit": "0a9a8c662f2b",
-  "provider_go_version": "v0.1.1-0.20260716150217-0a9a8c662f2b",
-  "provider_release_status": "no compatible provider tag or GitHub release existed at S5 reconciliation",
-  "studio_contract_version": "1.1.0",
-  "openapi_source_fingerprint": "3a5a4bb8e35cb66ff3374f7a28d5d401684fcc56441aca85df75d64c8c922f19",
+  "provider_commit": "bf130c33ba3d47bb7239d238b241b853df72f24e",
+  "provider_go_version": "v0.1.1-0.20260719044115-bf130c33ba3d",
+  "provider_release_status": "contract 1.2.0 merged by provider PR #64; no compatible provider tag or GitHub release exists",
+  "studio_contract_version": "1.2.0",
+  "openapi_source_fingerprint": "f797f4650bb62753dc09adb9a713b2b45a54c1b70b58365c9466a404d45ac52e",
   "manifest_sha256": {
     "README.md": "8edd303af23706850b8f62dbe80d3b209502994fb86c6fba01535052f229b132",
-    "client.ts": "d175068d9750c91807aa93d3de6674549a2cdd5b8d166c6b64c6de08ba425357",
-    "fixtures.json": "e54b26ff5cfb3b07f904a7db621fe6c30b80a257665b2325897743ea8b462b85",
-    "openapi.json": "b5285c14146708a1e1774511ba0fd2dff5db73385f0aeba350fc5a45c1838b01"
+    "client.ts": "4169fdb74bbdcd94b9b259fac342f077214f0550e652b924e1ffae1b41c8e642",
+    "fixtures.json": "abdb30f8cfa1530f27ebaba2034ef90d383446db2bde3d464a6ac7d35694e0f5",
+    "openapi.json": "50c90607236afb5516e2620ee855c34e843905e65457593538a748707c427525"
   }
 }

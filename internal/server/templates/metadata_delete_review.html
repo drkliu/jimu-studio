@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Review entity deletion — Jimu Studio</title><link rel="stylesheet" href="/assets/app.css"></head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Review deletion of <code>{{.Plan.Code}}</code></h1>
+    <p><a href="/metadata/edit?code={{.Plan.Code}}">Back to entity</a></p>
+    {{if .Message}}<div role="alert"><p>{{.Message}}</p></div>{{end}}
+    <section aria-labelledby="impact-heading">
+      <h2 id="impact-heading">Provider impact preview</h2>
+      <p>{{.Plan.ImpactSummary}}</p>
+      <p>Reviewed version: {{.Plan.ExpectedVersion}}</p>
+      <h3>Dependencies</h3>
+      {{if .Plan.Dependencies}}<ul>{{range .Plan.Dependencies}}<li>{{.}}</li>{{end}}</ul>{{else}}<p>No dependencies were reported.</p>{{end}}
+    </section>
+    {{if .Plan.Deletable}}
+      <div role="alert"><p>This permanently deletes the entity definition. This action cannot be undone in Studio.</p></div>
+      <form action="/metadata/delete/apply" method="post">
+        <input type="hidden" name="csrf" value="{{.Session.CSRF}}">
+        <input type="hidden" name="draft" value="{{.Draft}}">
+        <p><label for="delete-confirmation">Type <code>{{.Confirmation}}</code> to confirm</label><input id="delete-confirmation" name="confirmation" autocomplete="off" required></p>
+        <button type="submit">Permanently delete entity</button>
+      </form>
+    {{else}}<p role="status">The provider has blocked deletion. Resolve the listed dependencies and create a fresh plan.</p>{{end}}
+  </main>
+</body>
+</html>

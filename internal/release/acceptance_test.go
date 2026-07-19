@@ -8,25 +8,25 @@ import (
 	"testing"
 )
 
-func TestVerifyReleasedAcceptance(t *testing.T) {
+func TestVerifyCandidateAcceptance(t *testing.T) {
 	root := repositoryRoot(t)
 	if err := Verify(root); err != nil {
 		t.Fatalf("Verify() error = %v", err)
 	}
 }
 
-func TestVerifyRejectsAcceptedReleaseClaims(t *testing.T) {
+func TestVerifyRejectsCandidateReleaseClaims(t *testing.T) {
 	root := copyMetadata(t)
 	path := filepath.Join(root, "release", "acceptance.json")
 	contents, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	contents = []byte(strings.Replace(string(contents), `"status": "released"`, `"status": "accepted"`, 1))
+	contents = []byte(strings.Replace(string(contents), `"url": ""`, `"url": "https://example.invalid/release"`, 1))
 	if err = os.WriteFile(path, contents, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err = Verify(root); err == nil || !strings.Contains(err.Error(), "accepted record claims") {
+	if err = Verify(root); err == nil || !strings.Contains(err.Error(), "candidate claims") {
 		t.Fatalf("Verify() error = %v", err)
 	}
 }
@@ -47,14 +47,14 @@ func TestVerifyRejectsContractDigestDrift(t *testing.T) {
 	}
 }
 
-func TestVerifyRejectsIncompleteReleasedSource(t *testing.T) {
+func TestVerifyRejectsIncompleteAcceptedSource(t *testing.T) {
 	root := copyMetadata(t)
 	path := filepath.Join(root, "release", "acceptance.json")
 	contents, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	contents = []byte(strings.Replace(string(contents), `"source_commit": "2db2c8bcd877174c068f65ed034303c876da7834"`, `"source_commit": ""`, 1))
+	contents = []byte(strings.Replace(string(contents), `"status": "candidate"`, `"status": "accepted"`, 1))
 	if err = os.WriteFile(path, contents, 0o600); err != nil {
 		t.Fatal(err)
 	}

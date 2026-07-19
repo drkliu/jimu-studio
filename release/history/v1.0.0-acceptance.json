@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "released",
+  "studio_version": "1.0.0",
+  "go_version": "go1.26.5",
+  "packaging": "source-commit; no binary reproducibility claim",
+  "provider": {
+    "repository": "github.com/drkliu/jimu",
+    "commit": "0a9a8c662f2b",
+    "go_version": "v0.1.1-0.20260716150217-0a9a8c662f2b"
+  },
+  "contract": {
+    "version": "1.1.0",
+    "source_fingerprint": "3a5a4bb8e35cb66ff3374f7a28d5d401684fcc56441aca85df75d64c8c922f19",
+    "sha256": {
+      "README.md": "8edd303af23706850b8f62dbe80d3b209502994fb86c6fba01535052f229b132",
+      "client.ts": "d175068d9750c91807aa93d3de6674549a2cdd5b8d166c6b64c6de08ba425357",
+      "fixtures.json": "e54b26ff5cfb3b07f904a7db621fe6c30b80a257665b2325897743ea8b462b85",
+      "openapi.json": "b5285c14146708a1e1774511ba0fd2dff5db73385f0aeba350fc5a45c1838b01"
+    }
+  },
+  "baseline": {
+    "s5_merge_commit": "f02a750141b122703e57e6c715adf1c98c0141ee",
+    "s5_ci_run": 29639714157,
+    "s5_codeql_run": 29639714159,
+    "reconciliation_commit": "61c5b7cd711d5516472aa0a3718e711f314caebc",
+    "reconciliation_ci_run": 29639992477,
+    "reconciliation_codeql_run": 29639992443
+  },
+  "release": {
+    "tag": "v1.0.0",
+    "source_commit": "2db2c8bcd877174c068f65ed034303c876da7834",
+    "url": "https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0",
+    "published_at": "2026-07-18T10:24:01Z"
+  },
+  "evidence": [
+    {"name": "contract", "run_id": 29640625780, "conclusion": "success"},
+    {"name": "format", "run_id": 29640625780, "conclusion": "success"},
+    {"name": "vet", "run_id": 29640625780, "conclusion": "success"},
+    {"name": "unit-race-build", "run_id": 29640625780, "conclusion": "success"},
+    {"name": "browser-e2e", "run_id": 29640625780, "conclusion": "success"},
+    {"name": "dependency-review", "run_id": 29640576072, "conclusion": "success"},
+    {"name": "vulnerability", "run_id": 29640625780, "conclusion": "success"},
+    {"name": "codeql", "run_id": 29640625770, "conclusion": "success"}
+  ],
+  "supported": {
+    "deployment": "single Go process behind production TLS termination",
+    "browsers": ["Chrome on the protected Ubuntu runner"],
+    "go_only": true
+  },
+  "known_limitations": [
+    "Sessions and operator state are volatile process memory; restart logs users out and there is no shared-session failover.",
+    "TLS termination, secret injection, supervision, provider backups, and provider HTTP handler bindings are deployment-owner responsibilities.",
+    "Studio is fixed to provider contract 1.1.0 at the pinned provider commit and does not negotiate contract versions.",
+    "Only Chrome on protected Ubuntu CI is release-certified; Firefox and Safari are not certified for v1.0.0.",
+    "Metadata relationship behavior is limited to fields in the frozen contract and is never inferred from names.",
+    "Usage and discrepancy pages are observational and are not synchronous quota-enforcement authority.",
+    "Audit details are not rendered or exported beyond bounded redacted fields and redacted paths.",
+    "Studio exposes no password, token, certificate, raw SQL, workflow payload/result, worker identity, or fencing-token administration.",
+    "The release is source/commit based and makes no reproducible binary or container-image claim."
+  ],
+  "rollback": {
+    "fallback_commit": "f02a750141b122703e57e6c715adf1c98c0141ee",
+    "requires_reauthentication": true,
+    "reverses_provider_mutations": false
+  }
+}

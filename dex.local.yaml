@@ -1,0 +1,38 @@
+issuer: http://127.0.0.1:5556
+
+storage:
+  type: memory
+
+web:
+  http: 127.0.0.1:5556
+
+oauth2:
+  skipApprovalScreen: true
+
+staticClients:
+  - id: jimu-studio
+    secretEnv: JIMU_STUDIO_OIDC_CLIENT_SECRET
+    name: Jimu Studio Local
+    redirectURIs:
+      - http://127.0.0.1:8080/auth/callback
+
+enablePasswordDB: true
+
+staticPasswords:
+  - email: admin@example.com
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: admin
+    name: Local Studio Administrator
+    emailVerified: true
+    preferredUsername: admin
+    userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
+    groups:
+      - identity.admin
+      - studio.audit.read
+      - studio.metadata.apply
+      - studio.metadata.read
+      - studio.metadata.write
+      - studio.quota.admin
+      - studio.quota.read
+      - studio.workflow.operate
+      - studio.workflow.read
