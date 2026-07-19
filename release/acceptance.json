@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "status": "candidate",
+  "status": "accepted",
   "studio_version": "1.1.0",
   "go_version": "go1.26.5",
   "packaging": "source-commit; no binary reproducibility claim",
@@ -28,19 +28,19 @@
   },
   "release": {
     "tag": "v1.1.0",
-    "source_commit": "",
+    "source_commit": "a4b4b2f17518305b5fc4f4406a17b2ddefaa76a2",
     "url": "",
     "published_at": ""
   },
   "evidence": [
-    {"name": "contract", "run_id": 0, "conclusion": "pending"},
-    {"name": "format", "run_id": 0, "conclusion": "pending"},
-    {"name": "vet", "run_id": 0, "conclusion": "pending"},
-    {"name": "unit-race-build", "run_id": 0, "conclusion": "pending"},
-    {"name": "browser-e2e", "run_id": 0, "conclusion": "pending"},
-    {"name": "dependency-review", "run_id": 0, "conclusion": "pending"},
-    {"name": "vulnerability", "run_id": 0, "conclusion": "pending"},
-    {"name": "codeql", "run_id": 0, "conclusion": "pending"}
+    {"name": "contract", "run_id": 29674556716, "conclusion": "success"},
+    {"name": "format", "run_id": 29674556716, "conclusion": "success"},
+    {"name": "vet", "run_id": 29674556716, "conclusion": "success"},
+    {"name": "unit-race-build", "run_id": 29674556716, "conclusion": "success"},
+    {"name": "browser-e2e", "run_id": 29674556716, "conclusion": "success"},
+    {"name": "dependency-review", "run_id": 29674505175, "conclusion": "success"},
+    {"name": "vulnerability", "run_id": 29674556716, "conclusion": "success"},
+    {"name": "codeql", "run_id": 29674556675, "conclusion": "success"}
   ],
   "supported": {
     "deployment": "single Go process behind production TLS termination",

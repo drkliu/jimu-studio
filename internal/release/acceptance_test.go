@@ -15,7 +15,7 @@ func TestVerifyCandidateAcceptance(t *testing.T) {
 	}
 }
 
-func TestVerifyRejectsCandidateReleaseClaims(t *testing.T) {
+func TestVerifyRejectsAcceptedReleaseClaims(t *testing.T) {
 	root := copyMetadata(t)
 	path := filepath.Join(root, "release", "acceptance.json")
 	contents, err := os.ReadFile(path)
@@ -26,7 +26,7 @@ func TestVerifyRejectsCandidateReleaseClaims(t *testing.T) {
 	if err = os.WriteFile(path, contents, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err = Verify(root); err == nil || !strings.Contains(err.Error(), "candidate claims") {
+	if err = Verify(root); err == nil || !strings.Contains(err.Error(), "accepted record claims") {
 		t.Fatalf("Verify() error = %v", err)
 	}
 }
@@ -54,7 +54,7 @@ func TestVerifyRejectsIncompleteAcceptedSource(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	contents = []byte(strings.Replace(string(contents), `"status": "candidate"`, `"status": "accepted"`, 1))
+	contents = []byte(strings.Replace(string(contents), `"source_commit": "a4b4b2f17518305b5fc4f4406a17b2ddefaa76a2"`, `"source_commit": ""`, 1))
 	if err = os.WriteFile(path, contents, 0o600); err != nil {
 		t.Fatal(err)
 	}
