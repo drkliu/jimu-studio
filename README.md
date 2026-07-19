@@ -46,6 +46,6 @@ For a complete no-Docker local login and operation stack, open three Command Pro
 
 The supported released baseline is [`v1.0.0`](https://github.com/drkliu/jimu-studio/releases/tag/v1.0.0). Its immutable machine record is archived at `release/history/v1.0.0-acceptance.json` and rendered in [the v1.0.0 acceptance record](docs/releases/v1.0.0-acceptance.md).
 
-`release/acceptance.json` is now the fact-safe `v1.1.0` candidate. Its scored operation matrix, pending production gates, limitations, and rollback are documented in [the v1.1.0 candidate acceptance record](docs/releases/v1.1.0-acceptance.md). Every Provider operation is independently recorded and build-validated in [the operation scorecard](docs/releases/v1.1.0-operation-scorecard.json).
+`release/acceptance.json` is now the protected-CI accepted `v1.1.0` record; publication remains unclaimed. Its scored operation matrix, evidence, limitations, and rollback are documented in [the v1.1.0 acceptance record](docs/releases/v1.1.0-acceptance.md). Every Provider operation is independently recorded and build-validated in [the operation scorecard](docs/releases/v1.1.0-operation-scorecard.json).
 
 The packaging claim is source/commit only; no reproducible binary or container image is advertised.
