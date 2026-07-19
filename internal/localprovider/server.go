@@ -1,23 +1,63 @@
-// Package localprovider supplies bounded, in-memory Studio data for local UI testing.
+// Package localprovider supplies bounded PostgreSQL-backed Studio data for local UI testing.
 package localprovider
 
 import (
+	"bytes"
+	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
 	studioprovider "github.com/drkliu/jimu-studio/internal/provider"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 const sampleTime = "2026-07-19T00:00:00Z"
 
-// NewHandler returns a loopback-only development provider handler.
-func NewHandler() http.Handler {
-	local := &handler{
-		entities: map[string]studioprovider.Entity{
+var schemaNamePattern = regexp.MustCompile(`^[a-z][a-z0-9_]{0,62}$`)
+
+// Config identifies the PostgreSQL database and isolated schema used by the provider.
+type Config struct {
+	DSN    string
+	Schema string
+}
+
+// NewHandler opens and migrates a PostgreSQL-backed development provider handler.
+func NewHandler(ctx context.Context, config Config) (*handler, error) {
+	if strings.TrimSpace(config.DSN) == "" {
+		return nil, errors.New("PostgreSQL DSN is required")
+	}
+	if config.Schema == "" {
+		config.Schema = "jimu_studio_local"
+	}
+	if !schemaNamePattern.MatchString(config.Schema) {
+		return nil, fmt.Errorf("invalid PostgreSQL schema %q", config.Schema)
+	}
+	db, err := sql.Open("pgx", config.DSN)
+	if err != nil {
+		return nil, fmt.Errorf("open PostgreSQL: %w", err)
+	}
+	db.SetMaxOpenConns(8)
+	db.SetMaxIdleConns(4)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	local := &handler{db: db, schema: config.Schema, stateTable: `"` + config.Schema + `"."state"`}
+	if err := local.migrate(ctx, config.Schema); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	return local, nil
+}
+
+func initialState() persistentState {
+	local := persistentState{
+		Entities: map[string]studioprovider.Entity{
 			"orders": {
 				Code: "orders", Name: "Orders", Kind: "standard", Version: 1,
 				Fields: []studioprovider.Field{
@@ -26,26 +66,30 @@ func NewHandler() http.Handler {
 				},
 			},
 		},
-		idempotency: make(map[string]cachedMutation),
-		users: map[string]studioprovider.User{
+		Idempotency: make(map[string]cachedMutation),
+		Users: map[string]studioprovider.User{
 			"local-admin": {ID: "local-admin", DisplayName: "Local Studio Administrator", Email: "admin@example.com", Status: "active", Roles: append([]string(nil), sampleRoleKeys...), Version: 1},
 		},
-		roles: make(map[string]studioprovider.Role),
-		run:   studioprovider.WorkflowRun{ID: "run-001", Workflow: "local-order-processing", State: "running", Version: 1, CreatedAt: sampleTime, UpdatedAt: sampleTime, LeaseState: "active", LeaseExpiresAt: sampleTime},
-		task:  studioprovider.WorkflowTask{ID: "task-001", RunID: "run-001", Code: "validate-order", State: "running", Attempt: 1, Version: 1, LeaseState: "active", LeaseExpiresAt: sampleTime, RecoveryState: "none"},
-		plan:  studioprovider.QuotaPlan{Code: "local-default", Version: 1, EffectiveAt: sampleTime, WindowSeconds: 60, Limits: map[string]any{"requests": 1000}},
-		audits: []any{map[string]any{
+		Roles: make(map[string]studioprovider.Role),
+		Run:   studioprovider.WorkflowRun{ID: "run-001", Workflow: "local-order-processing", State: "running", Version: 1, CreatedAt: sampleTime, UpdatedAt: sampleTime, LeaseState: "active", LeaseExpiresAt: sampleTime},
+		Task:  studioprovider.WorkflowTask{ID: "task-001", RunID: "run-001", Code: "validate-order", State: "running", Attempt: 1, Version: 1, LeaseState: "active", LeaseExpiresAt: sampleTime, RecoveryState: "none"},
+		Plan:  studioprovider.QuotaPlan{Code: "local-default", Version: 1, EffectiveAt: sampleTime, WindowSeconds: 60, Limits: map[string]any{"requests": 1000}},
+		Audits: []any{map[string]any{
 			"id": "audit-001", "actor_user_id": "local-admin", "action": "studio.login", "target_type": "session",
 			"target_id": "local-session", "occurred_at": sampleTime, "details": map[string]any{"environment": "local"}, "redacted_paths": []string{},
 		}},
 	}
 	for _, key := range sampleRoleKeys {
-		local.roles[key] = studioprovider.Role{Key: key, DisplayName: key, System: true, Version: 1}
+		local.Roles[key] = studioprovider.Role{Key: key, DisplayName: key, System: true, Version: 1}
 	}
 	return local
 }
 
 type handler struct {
+	db          *sql.DB
+	schema      string
+	stateTable  string
+	requestMu   sync.Mutex
 	mu          sync.Mutex
 	entities    map[string]studioprovider.Entity
 	idempotency map[string]cachedMutation
@@ -57,21 +101,42 @@ type handler struct {
 	plan        studioprovider.QuotaPlan
 }
 
+type persistentState struct {
+	Entities    map[string]studioprovider.Entity `json:"entities"`
+	Idempotency map[string]cachedMutation        `json:"idempotency"`
+	Audits      []any                            `json:"audits"`
+	Users       map[string]studioprovider.User   `json:"users"`
+	Roles       map[string]studioprovider.Role   `json:"roles"`
+	Run         studioprovider.WorkflowRun       `json:"run"`
+	Task        studioprovider.WorkflowTask      `json:"task"`
+	Plan        studioprovider.QuotaPlan         `json:"plan"`
+}
+
 type cachedMutation struct {
-	status int
-	value  any
+	Status int `json:"status"`
+	Value  any `json:"value"`
 }
 
 func (provider *handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	if request.URL.Path == "/healthz" {
-		writeJSON(response, http.StatusOK, map[string]string{"status": "ok"})
+		ctx, cancel := context.WithTimeout(request.Context(), 2*time.Second)
+		defer cancel()
+		if err := provider.db.PingContext(ctx); err != nil {
+			writeJSON(response, http.StatusServiceUnavailable, map[string]string{"status": "unavailable", "storage": "postgresql"})
+			return
+		}
+		writeJSON(response, http.StatusOK, map[string]string{"status": "ok", "storage": "postgresql"})
 		return
 	}
 	if !strings.HasPrefix(request.Header.Get("Authorization"), "Bearer ") {
 		writeJSON(response, http.StatusUnauthorized, map[string]string{"code": "unauthorized", "message": "Bearer token required"})
 		return
 	}
+	provider.servePersisted(response, request)
+}
+
+func (provider *handler) serveLoaded(response http.ResponseWriter, request *http.Request) {
 
 	switch {
 	case request.Method == http.MethodGet && request.URL.Path == "/studio/v1/metadata/entities":
@@ -133,11 +198,137 @@ func (provider *handler) ServeHTTP(response http.ResponseWriter, request *http.R
 		writeJSON(response, http.StatusOK, map[string]any{"items": audits})
 	case request.Method == http.MethodPost && (request.URL.Path == "/studio/v1/metadata/plan" || request.URL.Path == "/studio/v1/metadata/apply"):
 		writeJSON(response, http.StatusOK, []any{map[string]any{
-			"entity_code": "orders", "plan_code": "local-orders-v1", "risk": "low", "summary": "Local in-memory migration preview", "requires_confirmation": request.URL.Path == "/studio/v1/metadata/apply",
+			"entity_code": "orders", "plan_code": "local-orders-v1", "risk": "low", "summary": "Local PostgreSQL migration preview", "requires_confirmation": request.URL.Path == "/studio/v1/metadata/apply",
 		}})
 	default:
 		writeJSON(response, http.StatusNotFound, map[string]string{"code": "not_found", "message": "Local provider route not implemented"})
 	}
+}
+
+func (provider *handler) migrate(ctx context.Context, schema string) error {
+	if err := provider.db.PingContext(ctx); err != nil {
+		return fmt.Errorf("connect PostgreSQL: %w", err)
+	}
+	if _, err := provider.db.ExecContext(ctx, `CREATE SCHEMA IF NOT EXISTS "`+schema+`"`); err != nil {
+		return fmt.Errorf("create PostgreSQL schema: %w", err)
+	}
+	if _, err := provider.db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS `+provider.stateTable+` (
+		id smallint PRIMARY KEY CHECK (id = 1),
+		revision bigint NOT NULL DEFAULT 1,
+		payload jsonb NOT NULL,
+		updated_at timestamptz NOT NULL DEFAULT now()
+	)`); err != nil {
+		return fmt.Errorf("create PostgreSQL state table: %w", err)
+	}
+	seed, err := json.Marshal(initialState())
+	if err != nil {
+		return fmt.Errorf("encode initial state: %w", err)
+	}
+	if _, err := provider.db.ExecContext(ctx, `INSERT INTO `+provider.stateTable+` (id, payload) VALUES (1, $1) ON CONFLICT (id) DO NOTHING`, seed); err != nil {
+		return fmt.Errorf("seed PostgreSQL state: %w", err)
+	}
+	return nil
+}
+
+func (provider *handler) servePersisted(response http.ResponseWriter, request *http.Request) {
+	provider.requestMu.Lock()
+	defer provider.requestMu.Unlock()
+	tx, err := provider.db.BeginTx(request.Context(), nil)
+	if err != nil {
+		writeJSON(response, http.StatusServiceUnavailable, map[string]string{"code": "storage_unavailable", "message": "PostgreSQL transaction could not start"})
+		return
+	}
+	defer func() { _ = tx.Rollback() }()
+	var payload []byte
+	if err := tx.QueryRowContext(request.Context(), `SELECT payload FROM `+provider.stateTable+` WHERE id = 1 FOR UPDATE`).Scan(&payload); err != nil {
+		writeJSON(response, http.StatusServiceUnavailable, map[string]string{"code": "storage_unavailable", "message": "PostgreSQL state could not be loaded"})
+		return
+	}
+	var state persistentState
+	if err := json.Unmarshal(payload, &state); err != nil {
+		writeJSON(response, http.StatusInternalServerError, map[string]string{"code": "storage_corrupt", "message": "PostgreSQL state is invalid"})
+		return
+	}
+	provider.loadState(state)
+	buffer := newBufferedResponse()
+	provider.serveLoaded(buffer, request)
+	if buffer.status < http.StatusInternalServerError {
+		encoded, encodeErr := json.Marshal(provider.snapshotState())
+		if encodeErr != nil {
+			writeJSON(response, http.StatusInternalServerError, map[string]string{"code": "storage_encode_failed", "message": "Provider state could not be encoded"})
+			return
+		}
+		if _, err = tx.ExecContext(request.Context(), `UPDATE `+provider.stateTable+` SET payload = $1, revision = revision + 1, updated_at = now() WHERE id = 1`, encoded); err != nil {
+			writeJSON(response, http.StatusServiceUnavailable, map[string]string{"code": "storage_unavailable", "message": "PostgreSQL state could not be saved"})
+			return
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		writeJSON(response, http.StatusServiceUnavailable, map[string]string{"code": "storage_unavailable", "message": "PostgreSQL transaction could not commit"})
+		return
+	}
+	buffer.copyTo(response)
+}
+
+func (provider *handler) loadState(state persistentState) {
+	provider.entities = state.Entities
+	provider.idempotency = state.Idempotency
+	provider.audits = state.Audits
+	provider.users = state.Users
+	provider.roles = state.Roles
+	provider.run = state.Run
+	provider.task = state.Task
+	provider.plan = state.Plan
+	if provider.entities == nil {
+		provider.entities = make(map[string]studioprovider.Entity)
+	}
+	if provider.idempotency == nil {
+		provider.idempotency = make(map[string]cachedMutation)
+	}
+	if provider.users == nil {
+		provider.users = make(map[string]studioprovider.User)
+	}
+	if provider.roles == nil {
+		provider.roles = make(map[string]studioprovider.Role)
+	}
+}
+
+func (provider *handler) snapshotState() persistentState {
+	return persistentState{Entities: provider.entities, Idempotency: provider.idempotency, Audits: provider.audits, Users: provider.users, Roles: provider.roles, Run: provider.run, Task: provider.task, Plan: provider.plan}
+}
+
+// Close releases PostgreSQL connections owned by the handler.
+func (provider *handler) Close() error { return provider.db.Close() }
+
+// DropTestSchema removes only an explicitly test-scoped schema.
+func (provider *handler) DropTestSchema(ctx context.Context) error {
+	if !strings.HasPrefix(provider.schema, "jimu_studio_test_") && !strings.HasPrefix(provider.schema, "jimu_studio_e2e_") {
+		return fmt.Errorf("refuse to drop non-test schema %q", provider.schema)
+	}
+	_, err := provider.db.ExecContext(ctx, `DROP SCHEMA "`+provider.schema+`" CASCADE`)
+	return err
+}
+
+type bufferedResponse struct {
+	header http.Header
+	status int
+	body   bytes.Buffer
+}
+
+func newBufferedResponse() *bufferedResponse {
+	return &bufferedResponse{header: make(http.Header), status: http.StatusOK}
+}
+func (response *bufferedResponse) Header() http.Header            { return response.header }
+func (response *bufferedResponse) WriteHeader(status int)         { response.status = status }
+func (response *bufferedResponse) Write(body []byte) (int, error) { return response.body.Write(body) }
+func (response *bufferedResponse) copyTo(target http.ResponseWriter) {
+	for key, values := range response.header {
+		for _, value := range values {
+			target.Header().Add(key, value)
+		}
+	}
+	target.WriteHeader(response.status)
+	_, _ = target.Write(response.body.Bytes())
 }
 
 func (provider *handler) listEntities(response http.ResponseWriter) {
@@ -174,7 +365,7 @@ func (provider *handler) updateEntity(response http.ResponseWriter, request *htt
 	provider.mu.Lock()
 	if cached, ok := provider.idempotency[body.IdempotencyKey]; ok {
 		provider.mu.Unlock()
-		writeJSON(response, cached.status, cached.value)
+		writeJSON(response, cached.Status, cached.Value)
 		return
 	}
 	current, exists := provider.entities[code]
@@ -190,7 +381,7 @@ func (provider *handler) updateEntity(response http.ResponseWriter, request *htt
 	}
 	provider.entities[code] = cloneEntity(body.Entity)
 	updated := cloneEntity(body.Entity)
-	provider.idempotency[body.IdempotencyKey] = cachedMutation{status: http.StatusOK, value: updated}
+	provider.idempotency[body.IdempotencyKey] = cachedMutation{Status: http.StatusOK, Value: updated}
 	action := "studio.metadata.entities.create"
 	if exists {
 		action = "studio.metadata.entities.update"
@@ -209,7 +400,7 @@ func (provider *handler) planEntityDeletion(response http.ResponseWriter, reques
 	provider.mu.Lock()
 	if cached, found := provider.idempotency[body.IdempotencyKey]; found {
 		provider.mu.Unlock()
-		writeJSON(response, cached.status, cached.value)
+		writeJSON(response, cached.Status, cached.Value)
 		return
 	}
 	entity, found := provider.entities[code]
@@ -227,7 +418,7 @@ func (provider *handler) planEntityDeletion(response http.ResponseWriter, reques
 		Code: code, ExpectedVersion: entity.Version, Deletable: true, Dependencies: []string{},
 		ImpactSummary: "The local provider found no dependent metadata definitions.",
 	}
-	provider.idempotency[body.IdempotencyKey] = cachedMutation{status: http.StatusOK, value: plan}
+	provider.idempotency[body.IdempotencyKey] = cachedMutation{Status: http.StatusOK, Value: plan}
 	provider.mu.Unlock()
 	writeJSON(response, http.StatusOK, plan)
 }
@@ -245,7 +436,7 @@ func (provider *handler) deleteEntity(response http.ResponseWriter, request *htt
 	provider.mu.Lock()
 	if cached, found := provider.idempotency[body.IdempotencyKey]; found {
 		provider.mu.Unlock()
-		writeJSON(response, cached.status, cached.value)
+		writeJSON(response, cached.Status, cached.Value)
 		return
 	}
 	entity, found := provider.entities[code]
@@ -261,7 +452,7 @@ func (provider *handler) deleteEntity(response http.ResponseWriter, request *htt
 	}
 	delete(provider.entities, code)
 	receipt := studioprovider.DeletionReceipt{Code: code, DeletedVersion: entity.Version, DeletedAt: time.Now().UTC().Format(time.RFC3339)}
-	provider.idempotency[body.IdempotencyKey] = cachedMutation{status: http.StatusOK, value: receipt}
+	provider.idempotency[body.IdempotencyKey] = cachedMutation{Status: http.StatusOK, Value: receipt}
 	provider.appendAuditLocked("studio.metadata.entities.delete", code, map[string]any{"deleted_version": entity.Version})
 	provider.mu.Unlock()
 	writeJSON(response, http.StatusOK, receipt)

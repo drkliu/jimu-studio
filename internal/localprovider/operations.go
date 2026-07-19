@@ -301,11 +301,11 @@ func (provider *handler) writeCachedLocked(response http.ResponseWriter, key str
 		return false
 	}
 	provider.mu.Unlock()
-	writeJSON(response, cached.status, cached.value)
+	writeJSON(response, cached.Status, cached.Value)
 	return true
 }
 
 func (provider *handler) cacheAndAuditLocked(key string, value any, action, target string, details map[string]any) {
-	provider.idempotency[key] = cachedMutation{status: http.StatusOK, value: value}
+	provider.idempotency[key] = cachedMutation{Status: http.StatusOK, Value: value}
 	provider.appendAuditLocked(action, target, details)
 }
