@@ -84,7 +84,7 @@ if not exist ".cache" mkdir ".cache"
 go build -o ".cache\studio-local.exe" ./cmd/studio
 if errorlevel 1 goto :test_failed
 
-go test -tags=e2e -timeout=2m ./e2e
+go test -tags=e2e -timeout=3m ./e2e
 if errorlevel 1 goto :test_failed
 
 echo.

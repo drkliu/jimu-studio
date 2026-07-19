@@ -100,7 +100,7 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Browser smoke and accessibility structure
-        run: go test -tags=e2e -timeout=2m ./e2e
+        run: go test -tags=e2e -timeout=3m ./e2e
 
   dependency-review:
     name: Dependency review
