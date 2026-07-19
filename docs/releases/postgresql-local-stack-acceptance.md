@@ -1,6 +1,6 @@
 # PostgreSQL local stack acceptance
 
-Status: locally accepted on 2026-07-19; protected CI and merge pending
+Status: protected checks accepted on 2026-07-19; merge pending
 
 ## Scores
 
@@ -28,6 +28,10 @@ The machine-readable companion is `postgresql-local-stack-scorecard.json`.
 | Dex PostgreSQL storage | pass; migrations, signing keys, 11 tables, and discovery issuer verified |
 | `govulncheck ./...` | pass; no vulnerabilities found |
 | `git diff --check` | pass |
+
+## Protected evidence
+
+PR #27 CI run `29689041997` passed Contract 1.2.0, PostgreSQL race/coverage/build, PostgreSQL-backed Chrome E2E, dependency review, and vulnerability scan. CodeQL workflow run `29689041996` passed. Advanced Security initially identified a reflected-XSS path at the buffered Provider response commit; commit `d8dfc9b` fixed it by reasserting a constant JSON content type and `nosniff` at the final write boundary and added regression coverage. The rerun's Advanced Security CodeQL check passed.
 
 The database tests used an isolated PostgreSQL 17 cluster on loopback port 55432. It was stopped and its validated temporary directory removed after testing. The user's existing service on port 5432 was not restarted or modified because its administrator credential was not available to the process.
 

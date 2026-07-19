@@ -1,6 +1,6 @@
 {
   "recorded_at": "2026-07-19",
-  "status": "locally_accepted_ci_pending",
+  "status": "protected_checks_accepted_merge_pending",
   "minimum_score": 90,
   "dimensions": [
     {"name": "provider_postgresql_persistence", "score": 96, "critical_controls": {"atomic_commit": true, "restart_durability_test": true, "fails_closed": true}},
@@ -10,6 +10,6 @@
     {"name": "evidence_and_rollback", "score": 96, "critical_controls": {"decision_recorded": true, "design_recorded": true, "rollback_non_destructive": true}}
   ],
   "mean_score": 95.6,
-  "evidence_completed": ["PostgreSQL 17 integration and race suites", "Provider close/reopen durability probe", "dedicated-role bootstrap rerun", "Dex PostgreSQL migrations and live discovery", "Chrome E2E", "govulncheck"],
-  "evidence_pending": ["protected CI and CodeQL", "merge commit read-back"]
+  "evidence_completed": ["PostgreSQL 17 integration and race suites", "Provider close/reopen durability probe", "dedicated-role bootstrap rerun", "Dex PostgreSQL migrations and live discovery", "Chrome E2E", "govulncheck", "PR CI 29689041997", "CodeQL 29689041996", "Advanced Security CodeQL pass"],
+  "evidence_pending": ["merge commit read-back"]
 }

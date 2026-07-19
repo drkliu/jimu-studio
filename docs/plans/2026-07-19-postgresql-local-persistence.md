@@ -1,6 +1,6 @@
 # PostgreSQL local persistence implementation plan
 
-Status: local implementation and acceptance complete on 2026-07-19; protected CI/merge pending
+Status: implementation, local acceptance, and protected CI complete on 2026-07-19; merge pending
 
 | Step | Evidence | Score (0-100) | Gate |
 |---|---|---:|---|
