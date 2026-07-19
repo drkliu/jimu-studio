@@ -3,43 +3,73 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Edit {{.Entity.Name}} — Jimu Studio</title>
+  <title>{{if .IsCreate}}Create entity type{{else}}Edit {{.Entity.Name}}{{end}} — Jimu Studio</title>
   <link rel="stylesheet" href="/assets/app.css">
   <script src="/assets/guard.js" defer></script>
+  <script src="/assets/metadata-fields.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
   <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
   <main id="main" tabindex="-1">
-    <h1>Edit {{.Entity.Name}}</h1>
+    <h1>{{if .IsCreate}}Create entity type{{else}}Edit {{.Entity.Name}}{{end}}</h1>
     <p><a href="/metadata">Back to metadata</a></p>
     {{if .Message}}<div role="alert"><p>{{.Message}}</p>{{if .RequestID}}<p>Request ID: <code>{{.RequestID}}</code></p>{{end}}</div>{{end}}
     {{if .CanEdit}}
-      <p>Saving requires the displayed version. If the provider has changed, Studio will stop and show both versions for reconciliation.</p>
-      <form action="/metadata/edit" method="post" data-dirty-guard>
+      <p>{{if .IsCreate}}Creation uses expected version 0. The provider will reject a duplicate code.{{else}}Saving requires the displayed version. If the provider has changed, Studio will stop and show both versions for reconciliation.{{end}}</p>
+      <form action="{{if .IsCreate}}/metadata/create{{else}}/metadata/edit{{end}}" method="post" data-dirty-guard data-metadata-form>
         <input type="hidden" name="csrf" value="{{.Session.CSRF}}">
-        <input type="hidden" name="code" value="{{.Entity.Code}}">
         <input type="hidden" name="expected_version" value="{{.Entity.Version}}">
-        <input type="hidden" name="field_count" value="{{len .Entity.Fields}}">
-        <p>Entity code: <code>{{.Entity.Code}}</code> · expected version {{.Entity.Version}}</p>
+        <input type="hidden" name="field_count" value="{{len .Entity.Fields}}" data-field-count>
+        {{if .IsCreate}}
+          <p><label for="entity-code">Entity code</label><input id="entity-code" name="code" value="{{.Entity.Code}}" maxlength="256" required></p>
+        {{else}}
+          <input type="hidden" name="code" value="{{.Entity.Code}}">
+          <p>Entity code: <code>{{.Entity.Code}}</code> · expected version {{.Entity.Version}}</p>
+        {{end}}
         <p><label for="entity-name">Name</label><input id="entity-name" name="name" value="{{.Entity.Name}}" maxlength="512" required></p>
         <p><label for="entity-kind">Kind</label><input id="entity-kind" name="kind" value="{{.Entity.Kind}}" maxlength="128"></p>
         <fieldset>
           <legend>Fields</legend>
+          <div data-field-list>
           {{range $index, $field := .Entity.Fields}}
-            <section class="field-editor" aria-labelledby="field-heading-{{$index}}">
-              <h2 id="field-heading-{{$index}}">Field {{$field.Code}}</h2>
-              <p><label for="field-code-{{$index}}">Code</label><input id="field-code-{{$index}}" name="field_code_{{$index}}" value="{{$field.Code}}" maxlength="256" required></p>
-              <p><label for="field-type-{{$index}}">Data type</label><input id="field-type-{{$index}}" name="field_type_{{$index}}" value="{{$field.DataType}}" maxlength="256" required></p>
-              <p><input id="field-required-{{$index}}" type="checkbox" name="field_required_{{$index}}"{{if $field.Required}} checked{{end}}><label for="field-required-{{$index}}">Required</label></p>
-              <p><input id="field-read-only-{{$index}}" type="checkbox" name="field_read_only_{{$index}}"{{if $field.ReadOnly}} checked{{end}}><label for="field-read-only-{{$index}}">Read only</label></p>
+            <section class="field-editor" data-field aria-labelledby="field-heading-{{$index}}">
+              <h2 id="field-heading-{{$index}}" data-field-heading>{{if $field.Code}}Field {{$field.Code}}{{else}}New field{{end}}</h2>
+              <p><label for="field-code-{{$index}}" data-code-label>Code</label><input id="field-code-{{$index}}" name="field_code_{{$index}}" value="{{$field.Code}}" maxlength="256" required data-field-code></p>
+              <p><label for="field-type-{{$index}}" data-type-label>Data type</label><input id="field-type-{{$index}}" name="field_type_{{$index}}" value="{{$field.DataType}}" maxlength="256" required data-field-type></p>
+              <p><input id="field-required-{{$index}}" type="checkbox" name="field_required_{{$index}}"{{if $field.Required}} checked{{end}} data-field-required><label for="field-required-{{$index}}" data-required-label>Required</label></p>
+              <p><input id="field-read-only-{{$index}}" type="checkbox" name="field_read_only_{{$index}}"{{if $field.ReadOnly}} checked{{end}} data-field-read-only><label for="field-read-only-{{$index}}" data-read-only-label>Read only</label></p>
+              <button type="button" data-remove-field>Remove field</button>
             </section>
           {{end}}
+          </div>
+          <button type="button" data-add-field>Add field</button>
         </fieldset>
-        <button type="submit">Save guarded changes</button>
+        <button type="submit">{{if .IsCreate}}Create entity type{{else}}Save guarded changes{{end}}</button>
       </form>
+      <template data-field-template>
+        <section class="field-editor" data-field>
+          <h2 data-field-heading>New field</h2>
+          <p><label data-code-label>Code</label><input maxlength="256" required data-field-code></p>
+          <p><label data-type-label>Data type</label><input maxlength="256" required data-field-type></p>
+          <p><input type="checkbox" data-field-required><label data-required-label>Required</label></p>
+          <p><input type="checkbox" data-field-read-only><label data-read-only-label>Read only</label></p>
+          <button type="button" data-remove-field>Remove field</button>
+        </section>
+      </template>
     {{else}}<p role="note">Your identity claims do not include metadata editing. The provider remains authoritative.</p>{{end}}
+    {{if .CanDelete}}
+      <section aria-labelledby="delete-heading">
+        <h2 id="delete-heading">Delete entity</h2>
+        <p>Deletion requires a fresh provider dependency preview and a separate typed confirmation.</p>
+        <form action="/metadata/delete/plan" method="post">
+          <input type="hidden" name="csrf" value="{{.Session.CSRF}}">
+          <input type="hidden" name="code" value="{{.Entity.Code}}">
+          <button type="submit">Review deletion impact</button>
+        </form>
+      </section>
+    {{end}}
   </main>
 </body>
 </html>

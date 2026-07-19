@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Entity deleted — Jimu Studio</title><link rel="stylesheet" href="/assets/app.css"></head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header><strong>Jimu Studio</strong><p>{{.Session.TenantName}} · {{.Session.DisplayName}}</p></header>
+  <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}">{{.Label}}</a></li>{{end}}</ul></nav>
+  <main id="main" tabindex="-1">
+    <h1>Entity deleted</h1>
+    <p role="status"><code>{{.Receipt.Code}}</code> version {{.Receipt.DeletedVersion}} was deleted at {{.Receipt.DeletedAt}}.</p>
+    <p>This receipt is the provider-authoritative record of the completed operation.</p>
+    <p><a href="/metadata">Return to metadata</a></p>
+  </main>
+</body>
+</html>

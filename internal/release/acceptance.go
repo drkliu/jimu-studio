@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	wantStudioVersion = "1.0.0"
+	wantStudioVersion = "1.1.0"
 	wantGoVersion     = "go1.26.5"
-	wantTag           = "v1.0.0"
+	wantTag           = "v1.1.0"
 	wantProvider      = "github.com/drkliu/jimu"
-	wantContract      = "1.1.0"
+	wantContract      = "1.2.0"
 )
 
 var fullCommit = regexp.MustCompile(`^[0-9a-f]{40}$`)
@@ -52,12 +52,11 @@ type contractIdentity struct {
 }
 
 type baseline struct {
-	S5MergeCommit        string `json:"s5_merge_commit"`
-	S5CIRun              int64  `json:"s5_ci_run"`
-	S5CodeQLRun          int64  `json:"s5_codeql_run"`
-	ReconciliationCommit string `json:"reconciliation_commit"`
-	ReconciliationCIRun  int64  `json:"reconciliation_ci_run"`
-	ReconciliationCodeQL int64  `json:"reconciliation_codeql_run"`
+	PreviousReleaseCommit  string `json:"previous_release_commit"`
+	PreviousReleaseTag     string `json:"previous_release_tag"`
+	ProviderContractPR     int64  `json:"provider_contract_pr"`
+	ProviderContractRun    int64  `json:"provider_contract_run"`
+	ProviderContractCommit string `json:"provider_contract_commit"`
 }
 
 type releaseIdentity struct {
@@ -122,7 +121,7 @@ func Verify(root string) error {
 }
 
 func verifyStatic(record acceptance, provider providerRecord, manifest contractManifest) error {
-	if record.SchemaVersion != 1 || record.StudioVersion != wantStudioVersion || record.GoVersion != wantGoVersion {
+	if record.SchemaVersion != 2 || record.StudioVersion != wantStudioVersion || record.GoVersion != wantGoVersion {
 		return fmt.Errorf("release identity schema=%d studio=%q go=%q", record.SchemaVersion, record.StudioVersion, record.GoVersion)
 	}
 	if record.Packaging != "source-commit; no binary reproducibility claim" {
@@ -146,7 +145,9 @@ func verifyStatic(record acceptance, provider providerRecord, manifest contractM
 	if record.Release.Tag != wantTag {
 		return fmt.Errorf("release tag = %q", record.Release.Tag)
 	}
-	if !fullCommit.MatchString(record.Baseline.S5MergeCommit) || !fullCommit.MatchString(record.Baseline.ReconciliationCommit) || record.Baseline.S5CIRun <= 0 || record.Baseline.S5CodeQLRun <= 0 || record.Baseline.ReconciliationCIRun <= 0 || record.Baseline.ReconciliationCodeQL <= 0 {
+	if !fullCommit.MatchString(record.Baseline.PreviousReleaseCommit) || record.Baseline.PreviousReleaseTag != "v1.0.0" ||
+		record.Baseline.ProviderContractPR != 64 || record.Baseline.ProviderContractRun != 29673464926 ||
+		record.Baseline.ProviderContractCommit != provider.Commit {
 		return fmt.Errorf("baseline evidence is incomplete")
 	}
 	requiredGates := []string{"contract", "format", "vet", "unit-race-build", "browser-e2e", "dependency-review", "vulnerability", "codeql"}
@@ -171,7 +172,7 @@ func verifyStatic(record acceptance, provider providerRecord, manifest contractM
 			return fmt.Errorf("known limitation %d is empty", i)
 		}
 	}
-	if record.Rollback.FallbackCommit != record.Baseline.S5MergeCommit || !record.Rollback.RequiresReauthentication || record.Rollback.ReversesProviderMutations {
+	if record.Rollback.FallbackCommit != record.Baseline.PreviousReleaseCommit || !record.Rollback.RequiresReauthentication || record.Rollback.ReversesProviderMutations {
 		return fmt.Errorf("rollback contract is unsafe")
 	}
 	return nil

@@ -12,8 +12,9 @@
   <nav aria-label="Studio areas"><ul>{{range .Navigation}}<li><a href="{{.Path}}"{{if eq .Path "/metadata"}} aria-current="page"{{end}}>{{.Label}}</a></li>{{end}}</ul></nav>
   <main id="main" tabindex="-1">
     <h1>Metadata</h1>
-    <p>Entity and field definitions from the authoritative Jimu provider. Relation semantics are not part of Studio contract 1.0.0.</p>
+    <p>Entity and field definitions from the authoritative Jimu provider.</p>
     {{if .Updated}}<p role="status">Entity {{.Updated}} was updated.</p>{{end}}
+    {{if .CanEdit}}<p><a class="button" href="/metadata/new">Create entity type</a></p>{{end}}
     <form action="/metadata" method="get" role="search">
       <label for="metadata-search">Search entities</label>
       <input id="metadata-search" name="search" value="{{.Search}}" maxlength="256">
