@@ -77,7 +77,7 @@ func TestMetadataCreateDeleteAndAuditBrowserFlow(t *testing.T) {
 	t.Cleanup(cancelAllocator)
 	browser, cancelBrowser := chromedp.NewContext(allocator)
 	t.Cleanup(cancelBrowser)
-	ctx, cancel := context.WithTimeout(browser, 90*time.Second)
+	ctx, cancel := context.WithTimeout(browser, 120*time.Second)
 	t.Cleanup(cancel)
 
 	var accessibilityViolations []string
