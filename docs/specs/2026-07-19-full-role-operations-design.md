@@ -47,7 +47,7 @@ The machine record is `docs/releases/v1.1.0-operation-scorecard.json` and is che
 
 ## Local production-parity stack
 
-`run-oidc.bat` starts native Dex on port 5556. `run-provider.bat` starts the bounded in-memory Provider on port 8081. `run-local.bat` starts Studio on port 8080 with the ignored local secret configuration. The local Provider implements every mutation family with concurrency, typed confirmation, idempotency, and audit append behavior; it is a reference/test service, not a persistent production data store.
+`run-oidc.bat` starts native Dex on port 5556. `run-provider.bat` starts the bounded reference Provider on port 8081. `run-local.bat` starts Studio on port 8080 with the ignored local secret configuration. The local Provider implements every mutation family with concurrency, typed confirmation, idempotency, and audit append behavior; it is a reference/test service, not the production Provider. DEC-009 supersedes the original volatile-storage detail: Dex and the reference Provider now persist their local state in dedicated PostgreSQL databases.
 
 ## Release boundary
 

@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-07-19",
+  "status": "protected_checks_accepted_merge_pending",
+  "minimum_score": 90,
+  "dimensions": [
+    {"name": "provider_postgresql_persistence", "score": 96, "critical_controls": {"atomic_commit": true, "restart_durability_test": true, "fails_closed": true}},
+    {"name": "dex_postgresql_persistence", "score": 95, "critical_controls": {"memory_backend_removed": true, "dedicated_role_database": true, "secret_not_committed": true}},
+    {"name": "local_operability", "score": 94, "critical_controls": {"docker_required": false, "loopback_database_target": true, "repeatable_setup": true}},
+    {"name": "authorization_and_audit_regression", "score": 97, "critical_controls": {"role_contract_unchanged": true, "idempotency_persisted": true, "audit_persisted": true}},
+    {"name": "evidence_and_rollback", "score": 96, "critical_controls": {"decision_recorded": true, "design_recorded": true, "rollback_non_destructive": true}}
+  ],
+  "mean_score": 95.6,
+  "evidence_completed": ["PostgreSQL 17 integration and race suites", "Provider close/reopen durability probe", "dedicated-role bootstrap rerun", "Dex PostgreSQL migrations and live discovery", "Chrome E2E", "govulncheck", "PR CI 29689041997", "CodeQL 29689041996", "Advanced Security CodeQL pass"],
+  "evidence_pending": ["merge commit read-back"]
+}

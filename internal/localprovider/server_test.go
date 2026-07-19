@@ -2,15 +2,51 @@ package localprovider
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"sync/atomic"
 	"testing"
+	"time"
 )
+
+var testSchemaSequence atomic.Uint64
+
+func TestUnauthorizedResponseHasJSONSecurityHeaders(t *testing.T) {
+	response := httptest.NewRecorder()
+	(&handler{}).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/studio/v1/metadata/entities", nil))
+	if response.Code != http.StatusUnauthorized {
+		t.Fatalf("unauthorized status = %d", response.Code)
+	}
+	if response.Header().Get("Content-Type") != "application/json; charset=utf-8" || response.Header().Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatalf("unsafe response headers: %v", response.Header())
+	}
+}
+
+func newTestHandler(t *testing.T) *handler {
+	t.Helper()
+	dsn := os.Getenv("JIMU_TEST_PG_DSN")
+	if dsn == "" {
+		t.Skip("JIMU_TEST_PG_DSN is required for PostgreSQL integration tests")
+	}
+	schema := fmt.Sprintf("jimu_studio_test_%d_%d", time.Now().UnixNano(), testSchemaSequence.Add(1))
+	handler, err := NewHandler(context.Background(), Config{DSN: dsn, Schema: schema})
+	if err != nil {
+		t.Fatalf("open PostgreSQL test handler: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = handler.db.Exec(`DROP SCHEMA IF EXISTS "` + schema + `" CASCADE`)
+		_ = handler.Close()
+	})
+	return handler
+}
 
 func TestMetadataRequiresBearerAndReturnsBoundedSample(t *testing.T) {
 	t.Parallel()
-	handler := NewHandler()
+	handler := newTestHandler(t)
 
 	unauthorized := httptest.NewRecorder()
 	handler.ServeHTTP(unauthorized, httptest.NewRequest(http.MethodGet, "/studio/v1/metadata/entities?limit=50", nil))
@@ -28,11 +64,14 @@ func TestMetadataRequiresBearerAndReturnsBoundedSample(t *testing.T) {
 	if response.Code != http.StatusOK || json.NewDecoder(response.Body).Decode(&page) != nil || len(page.Items) != 1 || page.Items[0]["code"] != "orders" {
 		t.Fatalf("metadata response = %d %s", response.Code, response.Body.String())
 	}
+	if response.Header().Get("Content-Type") != "application/json; charset=utf-8" || response.Header().Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatalf("unsafe response headers: %v", response.Header())
+	}
 }
 
 func TestMetadataCreateDeleteAndAuditAreRecorded(t *testing.T) {
 	t.Parallel()
-	handler := NewHandler()
+	handler := newTestHandler(t)
 	request := func(method, path, body string) *httptest.ResponseRecorder {
 		t.Helper()
 		var reader *bytes.Reader
@@ -72,7 +111,7 @@ func TestMetadataCreateDeleteAndAuditAreRecorded(t *testing.T) {
 
 func TestAllLocalRoleMutationsAreExecutableAndAudited(t *testing.T) {
 	t.Parallel()
-	handler := NewHandler()
+	handler := newTestHandler(t)
 	request := func(method, path, body string) *httptest.ResponseRecorder {
 		t.Helper()
 		req := httptest.NewRequest(method, path, bytes.NewReader([]byte(body)))
@@ -111,5 +150,47 @@ func TestAllLocalRoleMutationsAreExecutableAndAudited(t *testing.T) {
 		if audit.Code != http.StatusOK || !bytes.Contains(audit.Body.Bytes(), []byte(action)) {
 			t.Fatalf("audit omitted %s: %d %s", action, audit.Code, audit.Body.String())
 		}
+	}
+}
+
+func TestMetadataPersistsAcrossProviderRestart(t *testing.T) {
+	t.Parallel()
+	dsn := os.Getenv("JIMU_TEST_PG_DSN")
+	if dsn == "" {
+		t.Skip("JIMU_TEST_PG_DSN is required for PostgreSQL integration tests")
+	}
+	schema := fmt.Sprintf("jimu_studio_restart_%d_%d", time.Now().UnixNano(), testSchemaSequence.Add(1))
+	open := func() *handler {
+		result, err := NewHandler(context.Background(), Config{DSN: dsn, Schema: schema})
+		if err != nil {
+			t.Fatalf("open PostgreSQL test handler: %v", err)
+		}
+		return result
+	}
+	request := func(target http.Handler, method, path, body string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(method, path, bytes.NewReader([]byte(body)))
+		req.Header.Set("Authorization", "Bearer local-test-token")
+		response := httptest.NewRecorder()
+		target.ServeHTTP(response, req)
+		return response
+	}
+
+	first := open()
+	created := request(first, http.MethodPut, "/studio/v1/metadata/entities/persistent", `{"entity":{"code":"persistent","name":"Persistent","version":0,"fields":[]},"expected_version":0,"idempotency_key":"create-persistent"}`)
+	if created.Code != http.StatusOK {
+		t.Fatalf("create before restart = %d %s", created.Code, created.Body.String())
+	}
+	if err := first.Close(); err != nil {
+		t.Fatalf("close first provider: %v", err)
+	}
+
+	second := open()
+	t.Cleanup(func() {
+		_, _ = second.db.Exec(`DROP SCHEMA IF EXISTS "` + schema + `" CASCADE`)
+		_ = second.Close()
+	})
+	listed := request(second, http.MethodGet, "/studio/v1/metadata/entities?limit=50", "")
+	if listed.Code != http.StatusOK || !bytes.Contains(listed.Body.Bytes(), []byte(`"code":"persistent"`)) {
+		t.Fatalf("list after restart = %d %s", listed.Code, listed.Body.String())
 	}
 }

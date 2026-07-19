@@ -5,6 +5,7 @@ cd /d "%~dp0"
 set "DEX_VERSION=v2.45.1"
 set "DEX_SOURCE=%~dp0.cache\dex-%DEX_VERSION%"
 set "DEX_CONFIG=%~dp0dex.local.yaml"
+set "JIMU_DEX_POSTGRES_HOST=127.0.0.1:5432"
 
 where go >nul 2>nul
 if errorlevel 1 (
@@ -31,6 +32,16 @@ if not exist "%DEX_CONFIG%" (
 
 if not defined JIMU_STUDIO_OIDC_CLIENT_SECRET (
   for /f "usebackq delims=" %%S in (`powershell.exe -NoProfile -Command "[Environment]::GetEnvironmentVariable('JIMU_STUDIO_OIDC_CLIENT_SECRET','User')"`) do set "JIMU_STUDIO_OIDC_CLIENT_SECRET=%%S"
+)
+
+if not defined JIMU_STUDIO_POSTGRES_PASSWORD (
+  for /f "usebackq delims=" %%S in (`powershell.exe -NoProfile -Command "[Environment]::GetEnvironmentVariable('JIMU_STUDIO_POSTGRES_PASSWORD','User')"`) do set "JIMU_STUDIO_POSTGRES_PASSWORD=%%S"
+)
+
+if not defined JIMU_STUDIO_POSTGRES_PASSWORD (
+  echo ERROR: PostgreSQL is not configured. Run setup-postgres.bat first.
+  pause
+  exit /b 1
 )
 
 if not defined JIMU_STUDIO_OIDC_CLIENT_SECRET (
@@ -69,6 +80,7 @@ echo.
 echo Starting local OIDC...
 echo   Issuer:   http://127.0.0.1:5556
 echo   Config:   %DEX_CONFIG%
+echo   Storage:  PostgreSQL database jimu_dex_local
 echo   Login:    admin@example.com / password
 echo.
 echo Keep this window open. Press Ctrl+C to stop OIDC.

@@ -1,7 +1,14 @@
 issuer: http://127.0.0.1:5556
 
 storage:
-  type: memory
+  type: postgres
+  config:
+    host: ${JIMU_DEX_POSTGRES_HOST}
+    database: jimu_dex_local
+    user: jimu_dex
+    password: ${JIMU_STUDIO_POSTGRES_PASSWORD}
+    ssl:
+      mode: disable
 
 web:
   http: 127.0.0.1:5556

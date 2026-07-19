@@ -31,3 +31,14 @@ Tenant switching invalidates the old session and token-bound client before start
 The v1.0.0 support boundary is one Studio process behind production TLS termination. Session and operator state are volatile process memory. A restart intentionally logs users out, and multiple instances require session affinity without shared-session failover. TLS termination, process supervision, secret injection, provider backups, and provider HTTP handler bindings remain deployment-owner responsibilities.
 
 Chrome on the protected Ubuntu CI runner is the release-certified browser. Other Chromium builds may work, but Firefox and Safari are not certified for v1.0.0.
+
+## Docker-free local PostgreSQL stack
+
+The native local Provider and Dex use PostgreSQL; neither has an in-memory persistence fallback. PostgreSQL must be reachable at `127.0.0.1:5432`. Run `setup-postgres.bat` once with `JIMU_POSTGRES_ADMIN_PASSWORD` and a URL-safe `JIMU_STUDIO_POSTGRES_PASSWORD` set in the environment. The setup creates two least-scope login roles and owned databases:
+
+| Process | Role | Database | Persistent data |
+|---|---|---|---|
+| Local Jimu Provider | `jimu_studio` | `jimu_studio_local` | resources, versions, idempotent results, and audit history |
+| Dex OIDC | `jimu_dex` | `jimu_dex_local` | OIDC clients, authorization state, refresh tokens, and password records |
+
+Then restart `run-provider.bat` and `run-oidc.bat`. Both scripts load `JIMU_STUDIO_POSTGRES_PASSWORD` from the current process or the Windows user environment. The Provider health response must include `"storage":"postgresql"`. Local transport is loopback and uses `sslmode=disable`; production PostgreSQL deployments must use authenticated TLS and managed secret injection.

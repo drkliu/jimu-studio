@@ -59,6 +59,18 @@ exit /b %STUDIO_EXIT%
 echo Running Jimu Studio local verification...
 echo.
 
+if not defined JIMU_STUDIO_POSTGRES_PASSWORD (
+  for /f "usebackq delims=" %%S in (`powershell.exe -NoProfile -Command "[Environment]::GetEnvironmentVariable('JIMU_STUDIO_POSTGRES_PASSWORD','User')"`) do set "JIMU_STUDIO_POSTGRES_PASSWORD=%%S"
+)
+if not defined JIMU_TEST_PG_DSN (
+  if not defined JIMU_STUDIO_POSTGRES_PASSWORD (
+    echo ERROR: PostgreSQL is not configured. Run setup-postgres.bat first.
+    pause
+    exit /b 1
+  )
+  set "JIMU_TEST_PG_DSN=postgres://jimu_studio:%JIMU_STUDIO_POSTGRES_PASSWORD%@127.0.0.1:5432/jimu_studio_local?sslmode=disable"
+)
+
 go test ./... -count=1
 if errorlevel 1 goto :test_failed
 

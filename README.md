@@ -40,7 +40,7 @@ Run the complete local Go verification matrix with:
 run-local.bat test
 ```
 
-For a complete no-Docker local login and operation stack, open three Command Prompt windows and run `run-oidc.bat`, `run-provider.bat`, then `run-local.bat`. The launchers bind Dex, the in-memory reference Provider, and Studio only to `127.0.0.1`. The local login is printed by `run-oidc.bat`. The local Provider is non-persistent test infrastructure and records each mutation for the Audit page.
+For a complete no-Docker local login and operation stack, run `setup-postgres.bat` once, then open three Command Prompt windows and run `run-oidc.bat`, `run-provider.bat`, and `run-local.bat`. The launchers bind Dex, the PostgreSQL-backed reference Provider, and Studio to loopback application endpoints. Dex and the Provider use dedicated PostgreSQL roles/databases, and the Provider persists resources, idempotency results, and audit records across restarts. The local login is printed by `run-oidc.bat`.
 
 ## Release acceptance
 

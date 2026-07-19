@@ -4,6 +4,7 @@ package e2e_test
 
 import (
 	"context"
+	"fmt"
 	"net/http/httptest"
 	"os"
 	"strings"
@@ -27,7 +28,22 @@ func (identity fullMetadataBrowserIdentity) Exchange(ctx context.Context, reques
 }
 
 func TestMetadataCreateDeleteAndAuditBrowserFlow(t *testing.T) {
-	upstream := httptest.NewServer(localprovider.NewHandler())
+	dsn := os.Getenv("JIMU_TEST_PG_DSN")
+	if dsn == "" {
+		t.Fatal("JIMU_TEST_PG_DSN is required for the PostgreSQL browser flow")
+	}
+	schema := fmt.Sprintf("jimu_studio_e2e_%d", time.Now().UnixNano())
+	providerHandler, err := localprovider.NewHandler(context.Background(), localprovider.Config{DSN: dsn, Schema: schema})
+	if err != nil {
+		t.Fatalf("open PostgreSQL E2E provider: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := providerHandler.DropTestSchema(context.Background()); err != nil {
+			t.Errorf("drop PostgreSQL E2E schema: %v", err)
+		}
+		_ = providerHandler.Close()
+	})
+	upstream := httptest.NewServer(providerHandler)
 	t.Cleanup(upstream.Close)
 	broker, err := auth.NewBroker(auth.Config{
 		Tenants: []auth.Tenant{{ID: "alpha", Name: "Alpha", ProviderBaseURL: upstream.URL, Identity: fullMetadataBrowserIdentity{metadataBrowserIdentity{authorizeURL: "https://identity.example/authorize"}}}},
