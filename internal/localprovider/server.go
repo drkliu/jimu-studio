@@ -118,7 +118,8 @@ type cachedMutation struct {
 }
 
 func (provider *handler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
+	response.Header().Set("Content-Type", "application/json; charset=utf-8")
+	response.Header().Set("X-Content-Type-Options", "nosniff")
 	if request.URL.Path == "/healthz" {
 		ctx, cancel := context.WithTimeout(request.Context(), 2*time.Second)
 		defer cancel()
@@ -327,6 +328,8 @@ func (response *bufferedResponse) copyTo(target http.ResponseWriter) {
 			target.Header().Add(key, value)
 		}
 	}
+	target.Header().Set("Content-Type", "application/json; charset=utf-8")
+	target.Header().Set("X-Content-Type-Options", "nosniff")
 	target.WriteHeader(response.status)
 	_, _ = target.Write(response.body.Bytes())
 }

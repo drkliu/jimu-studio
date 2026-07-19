@@ -15,6 +15,17 @@ import (
 
 var testSchemaSequence atomic.Uint64
 
+func TestUnauthorizedResponseHasJSONSecurityHeaders(t *testing.T) {
+	response := httptest.NewRecorder()
+	(&handler{}).ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/studio/v1/metadata/entities", nil))
+	if response.Code != http.StatusUnauthorized {
+		t.Fatalf("unauthorized status = %d", response.Code)
+	}
+	if response.Header().Get("Content-Type") != "application/json; charset=utf-8" || response.Header().Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatalf("unsafe response headers: %v", response.Header())
+	}
+}
+
 func newTestHandler(t *testing.T) *handler {
 	t.Helper()
 	dsn := os.Getenv("JIMU_TEST_PG_DSN")
@@ -52,6 +63,9 @@ func TestMetadataRequiresBearerAndReturnsBoundedSample(t *testing.T) {
 	}
 	if response.Code != http.StatusOK || json.NewDecoder(response.Body).Decode(&page) != nil || len(page.Items) != 1 || page.Items[0]["code"] != "orders" {
 		t.Fatalf("metadata response = %d %s", response.Code, response.Body.String())
+	}
+	if response.Header().Get("Content-Type") != "application/json; charset=utf-8" || response.Header().Get("X-Content-Type-Options") != "nosniff" {
+		t.Fatalf("unsafe response headers: %v", response.Header())
 	}
 }
 
