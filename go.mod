@@ -1,11 +1,9 @@
 module github.com/drkliu/jimu-studio
 
-go 1.26.2
-
-toolchain go1.26.5
+go 1.27
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20260714215040-dc233986426f
+	github.com/chromedp/cdproto v0.157.6
 	github.com/chromedp/chromedp v0.16.0
 	github.com/coreos/go-oidc/v3 v3.20.0
 	github.com/jackc/pgx/v5 v5.10.0
@@ -13,7 +11,6 @@ require (
 )
 
 require (
-	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-json-experiment/json v0.0.0-20260623181947-01eb4420fa68 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
